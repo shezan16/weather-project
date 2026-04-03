@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌦️WEATHER DATA ANALYSIS SYSTEM</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav>
+    <div class="nav-left">
+        🌦️ WEATHER DATA ANALYSIS SYSTEM
+    </div>
+
+    <div class="nav-right">
+        <a href="team.html" target="_blank" class="team-icon">
+            <img src="images/Untitled.png" alt="team">
+            <span class="tooltip">Meet Our Team</span>
+        </a>
+    </div>
+</nav>
+
+<div class="container">
+
+<h2>Weather Data Entry</h2>
+
+<input id="date" placeholder="Date (dd-mm-yyyy)">
+<input id="temp" type="number" placeholder="Temperature (°C)">
+<input id="hum" type="number" placeholder="Humidity (%)">
+<input id="rain" type="number" placeholder="Rainfall (mm)">
+
+<button onclick="addRecord()">Add Record</button>
+<button onclick="location.href='records.html'">Show Records</button>
+
+<!-- 🔍 Search Section -->
+<input id="searchDate" type="text" placeholder="Search by Date">
+<button onclick="searchRecord()">Search</button>
+
+<h3 id="result"></h3>
+
+</div>
+
+<!-- wewwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww -->
+<div class="rain" id="rain"></div>
+
+<!-- 🎉 Success Popup -->
+<div id="successBox" class="success-box">
+    🎉 Record Added Successfully!
+</div>
+
+<!-- 🎊 Confetti Canvas -->
+<canvas id="confetti"></canvas>
+
+<!-- 🔊 Sound -->
+<audio id="successSound" src="https://www.myinstants.com/media/sounds/tada-fanfare.mp3"></audio>
+
+<!-- 🔄 Loading Spinner -->
+<div id="loader" class="loader"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
