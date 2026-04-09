@@ -18,7 +18,7 @@ function addRecord() {
          hideLoader();
         showSuccess();
 
-        // 🔥 clear input
+        // clear input
         document.getElementById("date").value = "";
         document.getElementById("temp").value = "";
         document.getElementById("hum").value = "";
@@ -42,9 +42,9 @@ function searchRecord() {
 
         if (found) {
             document.getElementById("result").innerText =
-                `✅ Found → Temp: ${found.temp}°C | Humidity: ${found.hum}% | Rain: ${found.rain}mm`;
+                ` Found → Temp: ${found.temp}°C | Humidity: ${found.hum}% | Rain: ${found.rain}mm`;
         } else {
-            document.getElementById("result").innerText = "❌ No Record Found";
+            document.getElementById("result").innerText = " No Record Found";
         }
 
     });
@@ -67,7 +67,7 @@ function showSuccess() {
     }, 3000);
 }
 
-// 🎊 Simple Confetti
+//  Simple Confetti
 function launchConfetti() {
     const canvas = document.getElementById("confetti");
     const ctx = canvas.getContext("2d");
@@ -104,7 +104,7 @@ function launchConfetti() {
 
     update();
 
-    // 🔥 stop after 3 sec
+    //  stop after 3 sec
     setTimeout(() => {
         cancelAnimationFrame(animationId);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -143,11 +143,11 @@ function hideLoader() {
 
 
 
-// 🌦️ Weather Animation Controller
+//  Weather Animation Controller
 
 const rain = document.getElementById("rain");
 
-// 👉 Random Rain Intensity
+//  Random Rain Intensity
 function controlRain() {
     const intensity = Math.random();
 
@@ -162,7 +162,7 @@ function controlRain() {
     }
 }
 
-// ⚡ Lightning Effect Control
+//  Lightning Effect Control
 function triggerLightning() {
     const flash = document.createElement("div");
 
@@ -187,7 +187,7 @@ function triggerLightning() {
     }, 120);
 }
 
-// 🌩️ Random Lightning Interval
+//  Random Lightning Interval
 function autoLightning() {
     setInterval(() => {
         if (Math.random() > 0.7) {
@@ -196,7 +196,7 @@ function autoLightning() {
     }, 4000);
 }
 
-// 🌈 Mouse Parallax Effect (Premium feel)
+//  Mouse Parallax Effect (Premium feel)
 document.addEventListener("mousemove", (e) => {
     const x = e.clientX / window.innerWidth;
     const y = e.clientY / window.innerHeight;
@@ -204,7 +204,7 @@ document.addEventListener("mousemove", (e) => {
     document.body.style.backgroundPosition = `${50 + x * 5}% ${50 + y * 5}%`;
 });
 
-// ⏱️ Run System
+// ⏱ Run System
 setInterval(controlRain, 3000);
 autoLightning();
 controlRain();
@@ -220,4 +220,3 @@ function dayNightMode() {
 }
 
 dayNightMode();
-

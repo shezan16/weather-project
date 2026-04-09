@@ -1,4 +1,4 @@
-console.log("🔥 NEW SERVER FILE RUNNING");
+console.log(" NEW SERVER FILE RUNNING");
 const express = require('express');
 const fs = require('fs');
 
@@ -21,7 +21,7 @@ function writeData(data) {
     fs.writeFileSync(FILE, JSON.stringify(data, null, 2));
 }
 
-// ✅ GET (IMPORTANT)
+//  GET (IMPORTANT)
 app.get('/records', (req, res) => {
     res.json(readData());
 });
@@ -51,5 +51,9 @@ app.put('/update/:index', (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log("🔥 Server running at http://localhost:3000");
+    console.log(" Server running at http://localhost:3000");
 });
+
+
+const cors = require('cors');
+app.use(cors());
