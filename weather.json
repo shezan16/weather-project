@@ -1,53 +1,5 @@
 [
   {
-    "date": "14-04-2025",
-    "temp": "16",
-    "hum": "14",
-    "rain": "16"
-  },
-  {
-    "date": "04-02-2026",
-    "temp": "39",
-    "hum": "15",
-    "rain": "-6"
-  },
-  {
-    "date": "04-10-2003",
-    "temp": "-21",
-    "hum": "20",
-    "rain": "23"
-  },
-  {
-    "date": "10-10-2010",
-    "temp": "60",
-    "hum": "16",
-    "rain": "23"
-  },
-  {
-    "date": "20-04-2025",
-    "temp": "28",
-    "hum": "54",
-    "rain": "28"
-  },
-  {
-    "date": "20-05-2001",
-    "temp": "32",
-    "hum": "32",
-    "rain": "25"
-  },
-  {
-    "date": "03-04-2025",
-    "temp": "-14",
-    "hum": "15",
-    "rain": "18"
-  },
-  {
-    "date": "03-04-2025",
-    "temp": "38",
-    "hum": "23",
-    "rain": "38"
-  },
-  {
     "date": "10-12-2021",
     "temp": "33",
     "hum": "-28",
@@ -70,5 +22,65 @@
     "temp": "39",
     "hum": "33",
     "rain": "36"
+  },
+  {
+    "date": "10-04-2026",
+    "temp": "20.9",
+    "hum": "99",
+    "rain": "0"
+  },
+  {
+    "date": "10-04-2026",
+    "temp": "15.6",
+    "hum": "92",
+    "rain": "0.3"
+  },
+  {
+    "date": "10-04-2026",
+    "location": "Dhaka, Dhaka Division, Bangladesh",
+    "day": "Friday",
+    "temp": "20.8",
+    "hum": "99",
+    "rain": "0"
+  },
+  {
+    "date": "10-04-2026",
+    "location": "Dhaka, Dhaka Division, Bangladesh",
+    "day": "Friday",
+    "temp": "20.8",
+    "hum": "99",
+    "rain": "0"
+  },
+  {
+    "date": "10-04-2026",
+    "location": "Dhaka, Dhaka Division, Bangladesh",
+    "day": "Friday",
+    "temp": "20.8",
+    "hum": "99",
+    "rain": "0"
+  },
+  {
+    "date": "10-04-2026",
+    "location": "Pakistan, Pakistan",
+    "day": "Friday",
+    "temp": "11.3",
+    "hum": "93",
+    "rain": "0"
+  },
+  {
+    "date": "10-04-2026",
+    "location": "Pakistan, Pakistan",
+    "day": "Friday",
+    "temp": "11.3",
+    "hum": "93",
+    "rain": "0"
+  },
+  {
+    "date": "10-04-2026",
+    "location": "Mymensingh, Mymensingh Division, Bangladesh",
+    "day": "Friday",
+    "temp": "20.1",
+    "hum": "93",
+    "rain": "0.1"
   }
 ]

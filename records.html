@@ -7,28 +7,61 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div class="records-weather-scene" aria-hidden="true">
+        <div class="records-cloud cloud-a"></div>
+        <div class="records-cloud cloud-b"></div>
+        <div class="records-cloud cloud-c"></div>
+        <div class="records-cloud cloud-d"></div>
+        <div class="records-cloud cloud-e"></div>
+        <div class="records-cloud cloud-f"></div>
+        <div class="records-orb orb-sun"></div>
+        <div class="records-orb orb-mist"></div>
+        <div class="records-orb orb-cool"></div>
+        <div class="records-orb orb-glow"></div>
+        <div class="records-drop drop-a"></div>
+        <div class="records-drop drop-b"></div>
+        <div class="records-drop drop-c"></div>
+        <div class="records-drop drop-d"></div>
+        <div class="records-drop drop-e"></div>
+    </div>
 
-<nav>📊 Weather Records</nav>
+    <nav>
+        <div class="nav-left">
+            <div>
+                <p class="eyebrow">Saved weather snapshots</p>
+                <h1>Weather Records</h1>
+            </div>
+        </div>
 
-<div class="container">
+        <div class="nav-right">
+            <a href="index.html" class="nav-link">Dashboard</a>
+        </div>
+    </nav>
 
-    <h2>All Weather Records</h2>
+    <div class="container">
+        <div class="records-header">
+            <div>
+                <p class="records-kicker">Weather archive</p>
+                <h2>All Weather Records</h2>
+            </div>
+            <a href="index.html#liveWeatherForm" class="records-pill">Live archive view</a>
+        </div>
 
-    <table id="table">
-        <tr>
-            <th>Date</th>
-            <th>Temp (°C)</th>
-            <th>Humidity (%)</th>
-            <th>Rainfall (mm)</th>
-            <th>Action</th>
-        </tr>
-    </table>
+        <table id="table">
+            <tr>
+                <th>Date</th>
+                <th>Location</th>
+                <th>Day</th>
+                <th>Temp (C)</th>
+                <th>Humidity (%)</th>
+                <th>Rainfall (mm)</th>
+                <th>Action</th>
+            </tr>
+        </table>
 
-    <button onclick="goBack()">⬅ Back</button>
+        <button onclick="goBack()" class="secondary-button">Back</button>
+    </div>
 
-</div>
-
-<script src="records.js"></script>
-
+    <script src="records.js"></script>
 </body>
 </html>
