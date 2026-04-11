@@ -82,5 +82,13 @@
     "temp": "20.1",
     "hum": "93",
     "rain": "0.1"
+  },
+  {
+    "date": "11-04-2026",
+    "location": "Mymensingh, Mymensingh Division, Bangladesh",
+    "day": "Saturday",
+    "temp": "26.4",
+    "hum": "68",
+    "rain": "0"
   }
 ]

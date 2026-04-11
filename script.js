@@ -1,4 +1,4 @@
-const recordForm = document.getElementById("recordForm");
+﻿const recordForm = document.getElementById("recordForm");
 const dateInput = document.getElementById("date");
 const locationField = document.getElementById("locationField");
 const dayField = document.getElementById("dayField");
@@ -14,12 +14,81 @@ const locationInput = document.getElementById("locationInput");
 const refreshLiveWeatherBtn = document.getElementById("refreshLiveWeatherBtn");
 const useLiveWeatherBtn = document.getElementById("useLiveWeatherBtn");
 const liveStatus = document.getElementById("liveStatus");
+const liveWeatherMapLink = document.getElementById("liveWeatherMapLink");
+const weatherNewsFrame = document.getElementById("weatherNewsFrame");
+const weatherNewsLink = document.getElementById("weatherNewsLink");
+const weatherNewsTitle = document.getElementById("weatherNewsTitle");
+const weatherNewsTabs = document.querySelectorAll(".weather-news-tab");
 const successBox = document.getElementById("successBox");
 const successTitle = document.getElementById("successTitle");
 const successMessage = document.getElementById("successMessage");
+const weatherMapElement = document.getElementById("weatherMap");
+const weatherMapShell = document.getElementById("weatherMapShell");
+const radarToggleBtn = document.getElementById("radarToggleBtn");
+const recenterMapBtn = document.getElementById("recenterMapBtn");
+const refreshRadarBtn = document.getElementById("refreshRadarBtn");
+const zoomOutMapBtn = document.getElementById("zoomOutMapBtn");
+const fullscreenMapBtn = document.getElementById("fullscreenMapBtn");
+const labelsToggleBtn = document.getElementById("labelsToggleBtn");
+const mapModeSatelliteBtn = document.getElementById("mapModeSatelliteBtn");
+const mapModeStreetBtn = document.getElementById("mapModeStreetBtn");
+const mapLayerStatus = document.getElementById("mapLayerStatus");
+const mapCityPill = document.getElementById("mapCityPill");
+const mapTimelinePill = document.getElementById("mapTimelinePill");
+const mapTimelineText = document.getElementById("mapTimelineText");
+const mapPlayBtn = document.getElementById("mapPlayBtn");
+const mapOpenLink = document.getElementById("mapOpenLink");
+const predictionLead = document.getElementById("predictionLead");
+const predictionList = document.getElementById("predictionList");
+const trendBars = document.getElementById("trendBars");
+const trendDirection = document.getElementById("trendDirection");
+const trendChange = document.getElementById("trendChange");
+const trendAverage = document.getElementById("trendAverage");
+const trendSummary = document.getElementById("trendSummary");
+const comparisonForm = document.getElementById("comparisonForm");
+const comparisonLocationInput = document.getElementById("comparisonLocationInput");
+const comparisonStatus = document.getElementById("comparisonStatus");
+const comparisonPrimaryName = document.getElementById("comparisonPrimaryName");
+const comparisonPrimaryStats = document.getElementById("comparisonPrimaryStats");
+const comparisonSecondaryName = document.getElementById("comparisonSecondaryName");
+const comparisonSecondaryStats = document.getElementById("comparisonSecondaryStats");
+const overviewLocation = document.getElementById("overviewLocation");
+const overviewTimezone = document.getElementById("overviewTimezone");
+const overviewCondition = document.getElementById("overviewCondition");
+const overviewConditionMeta = document.getElementById("overviewConditionMeta");
+const overviewRecordCount = document.getElementById("overviewRecordCount");
+const overviewRecordMeta = document.getElementById("overviewRecordMeta");
+const overviewForecastPeak = document.getElementById("overviewForecastPeak");
+const overviewForecastMeta = document.getElementById("overviewForecastMeta");
+const overviewMapLink = document.getElementById("overviewMapLink");
+const dashboardChips = document.querySelectorAll(".dashboard-chip");
+const chatForm = document.getElementById("chatForm");
+const chatInput = document.getElementById("chatInput");
+const chatMessages = document.getElementById("chatMessages");
+const chatChips = document.querySelectorAll(".chat-chip");
+const voiceToggleBtn = document.getElementById("voiceToggleBtn");
+const chatAiAvatar = document.getElementById("chatAiAvatar");
 
 let latestLiveWeather = null;
 let successTimeoutId = null;
+let voiceEnabled = true;
+let weatherMap = null;
+let weatherMarker = null;
+let radarLayer = null;
+let radarVisible = true;
+let latestRadarMeta = null;
+let labelsVisible = true;
+let activeBaseMode = "satellite";
+let satelliteBaseLayer = null;
+let darkBaseLayer = null;
+let labelsLayer = null;
+let radarFrames = [];
+let radarFrameIndex = -1;
+let radarAnimationId = null;
+let radarPlaying = false;
+let radarRefreshId = null;
+let activeWeatherOverlay = "radar";
+let mapZoomLevel = 6;
 
 function getApiBase() {
     const isLocalHost = ["localhost", "127.0.0.1"].includes(window.location.hostname);
@@ -142,6 +211,219 @@ async function fetchDirectLiveWeather(location) {
     };
 }
 
+function setMapCityLabel(location) {
+    if (mapCityPill) {
+        mapCityPill.textContent = `Center: ${location}`;
+    }
+}
+
+function setMapLayerLabel(message) {
+    if (mapLayerStatus) {
+        mapLayerStatus.textContent = message;
+    }
+}
+
+function updateMapOpenLink(location) {
+    const targetHref = `map.html?location=${encodeURIComponent(location)}`;
+
+    if (mapOpenLink) {
+        mapOpenLink.href = targetHref;
+    }
+
+    if (liveWeatherMapLink) {
+        liveWeatherMapLink.href = targetHref;
+    }
+}
+
+function setMapTimelineLabel(dateText) {
+    if (mapTimelinePill) {
+        mapTimelinePill.textContent = dateText;
+    }
+
+    if (mapTimelineText) {
+        mapTimelineText.textContent = dateText;
+    }
+}
+
+function formatMapTimeline(timestamp = Date.now()) {
+    const date = new Date(timestamp);
+    const day = date.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short"
+    });
+    const time = date.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+    });
+
+    return `${day} ${time}`;
+}
+
+function setWeatherChannelSource(channelSrc, channelLink, title) {
+    if (!channelSrc || !weatherNewsFrame) {
+        return;
+    }
+
+    weatherNewsFrame.src = channelSrc;
+    weatherNewsFrame.title = title || "Weather TV channel";
+
+    if (weatherNewsLink && channelLink) {
+        weatherNewsLink.href = channelLink;
+    }
+
+    if (weatherNewsTitle && title) {
+        weatherNewsTitle.textContent = title;
+    }
+}
+
+function updateRadarPlaybackButton() {
+    if (!mapPlayBtn) {
+        return;
+    }
+
+    mapPlayBtn.textContent = radarPlaying ? "Pause" : "Play";
+}
+
+function updateFullscreenButton() {
+    if (!fullscreenMapBtn) {
+        return;
+    }
+
+    fullscreenMapBtn.textContent = document.fullscreenElement === weatherMapShell ? "Exit" : "Full";
+}
+
+function stopRadarAnimation() {
+    if (radarAnimationId) {
+        clearInterval(radarAnimationId);
+        radarAnimationId = null;
+    }
+
+    radarPlaying = false;
+    updateRadarPlaybackButton();
+}
+
+function startRadarAnimation() {
+    radarPlaying = true;
+    updateRadarPlaybackButton();
+}
+
+function scheduleRadarRefresh() {
+    if (radarRefreshId) {
+        clearInterval(radarRefreshId);
+    }
+
+    radarRefreshId = setInterval(() => {
+        renderWeatherMapEmbed();
+    }, 10 * 60 * 1000);
+}
+
+function updateMapModeButtons() {
+    if (mapModeSatelliteBtn) {
+        mapModeSatelliteBtn.classList.toggle("active", activeWeatherOverlay === "clouds");
+    }
+
+    if (radarToggleBtn) {
+        radarToggleBtn.classList.toggle("active", activeWeatherOverlay === "radar");
+    }
+
+    if (labelsToggleBtn) {
+        labelsToggleBtn.classList.toggle("active", activeWeatherOverlay === "wind");
+    }
+
+    if (mapModeStreetBtn) {
+        mapModeStreetBtn.classList.toggle("active", activeWeatherOverlay === "temp");
+    }
+}
+
+function getMapCoordinates() {
+    if (latestLiveWeather && latestLiveWeather.latitude !== undefined && latestLiveWeather.longitude !== undefined) {
+        return {
+            lat: latestLiveWeather.latitude,
+            lon: latestLiveWeather.longitude,
+            label: latestLiveWeather.location
+        };
+    }
+
+    return {
+        lat: 23.8103,
+        lon: 90.4125,
+        label: "Dhaka"
+    };
+}
+
+function getWeatherMapEmbedUrl() {
+    const { lat, lon } = getMapCoordinates();
+    const overlay = radarPlaying ? "radar" : activeWeatherOverlay;
+    const params = new URLSearchParams({
+        lat: lat.toFixed(4),
+        lon: lon.toFixed(4),
+        zoom: String(mapZoomLevel),
+        level: "surface",
+        overlay,
+        menu: "",
+        message: "",
+        marker: "true",
+        calendar: "now",
+        pressure: "true",
+        type: "map",
+        location: "coordinates",
+        detail: "true",
+        detailLat: lat.toFixed(4),
+        detailLon: lon.toFixed(4),
+        metricWind: "default",
+        metricTemp: "default",
+        radarRange: "-1"
+    });
+
+    return `https://embed.windy.com/embed2.html?${params.toString()}`;
+}
+
+function renderWeatherMapEmbed() {
+    if (!weatherMapElement) {
+        return;
+    }
+
+    const frameLabel = radarPlaying ? "Live animation" : formatMapTimeline();
+    setMapTimelineLabel(frameLabel);
+    setMapLayerLabel("Tap to open full map");
+
+    weatherMapElement.innerHTML = `
+        <iframe
+            title="Live weather map"
+            src="${getWeatherMapEmbedUrl()}"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            allowfullscreen
+        ></iframe>
+    `;
+
+    const { label } = getMapCoordinates();
+    setMapCityLabel(label);
+    updateMapOpenLink(label);
+    updateMapModeButtons();
+}
+
+async function ensureWeatherMap() {
+    if (!weatherMapElement) {
+        return;
+    }
+
+    renderWeatherMapEmbed();
+    scheduleRadarRefresh();
+}
+
+async function syncWeatherMapToLocation(payload) {
+    if (!payload || !weatherMapElement) {
+        return;
+    }
+
+    mapZoomLevel = 7;
+    renderWeatherMapEmbed();
+    setMapCityLabel(payload.location);
+    updateMapOpenLink(payload.location);
+}
+
 function formatMetric(value, unit) {
     if (value === null || value === undefined || Number.isNaN(Number(value))) {
         return "--";
@@ -161,6 +443,477 @@ function formatDayName(date = new Date()) {
     return date.toLocaleDateString("en-US", {
         weekday: "long"
     });
+}
+
+function setPredictionFallback() {
+    if (predictionLead) {
+        predictionLead.textContent = "Load live weather to see the next forecast window.";
+    }
+
+    if (predictionList) {
+        predictionList.innerHTML = '<div class="analytics-list-item">Forecast updates will appear here.</div>';
+    }
+}
+
+function setTrendFallback() {
+    if (trendBars) {
+        trendBars.innerHTML = `
+            <div class="trend-bar-item">
+                <span class="trend-bar" style="height: 24px;"></span>
+                <small>--</small>
+            </div>
+        `;
+    }
+
+    if (trendDirection) {
+        trendDirection.textContent = "--";
+    }
+
+    if (trendChange) {
+        trendChange.textContent = "--";
+    }
+
+    if (trendAverage) {
+        trendAverage.textContent = "--";
+    }
+
+    if (trendSummary) {
+        trendSummary.textContent = "Trend insights will appear after live weather loads.";
+    }
+}
+
+function setComparisonFallback() {
+    if (comparisonStatus) {
+        comparisonStatus.textContent = "Compare your selected city with another location.";
+    }
+
+    if (comparisonPrimaryName) {
+        comparisonPrimaryName.textContent = "--";
+    }
+
+    if (comparisonPrimaryStats) {
+        comparisonPrimaryStats.textContent = "--";
+    }
+
+    if (comparisonSecondaryName) {
+        comparisonSecondaryName.textContent = "--";
+    }
+
+    if (comparisonSecondaryStats) {
+        comparisonSecondaryStats.textContent = "--";
+    }
+}
+
+function setOverviewFallback() {
+    if (overviewLocation) overviewLocation.textContent = "Dhaka, Bangladesh";
+    if (overviewTimezone) overviewTimezone.textContent = "Timezone will appear here.";
+    if (overviewCondition) overviewCondition.textContent = "--";
+    if (overviewConditionMeta) overviewConditionMeta.textContent = "Humidity, wind, and rainfall snapshot.";
+    if (overviewRecordCount) overviewRecordCount.textContent = "--";
+    if (overviewRecordMeta) overviewRecordMeta.textContent = "Record insights will appear here.";
+    if (overviewForecastPeak) overviewForecastPeak.textContent = "--";
+    if (overviewForecastMeta) overviewForecastMeta.textContent = "The strongest forecast day will appear here.";
+}
+
+async function refreshOverview(payload = latestLiveWeather) {
+    if (!payload) {
+        setOverviewFallback();
+        return;
+    }
+
+    const conditionLabel = weatherDescriptions[payload.current.weatherCode] || "Current weather";
+    const records = await getSavedRecords();
+    const rainfallRecords = records
+        .map((item) => ({ ...item, rainValue: Number(item.rain) }))
+        .filter((item) => !Number.isNaN(item.rainValue));
+    const wettestSaved = rainfallRecords.sort((a, b) => b.rainValue - a.rainValue)[0];
+    const warmestForecast = payload.daily?.length
+        ? [...payload.daily].sort((a, b) => Number(b.maxTemperature) - Number(a.maxTemperature))[0]
+        : null;
+
+    if (overviewLocation) {
+        overviewLocation.textContent = payload.location;
+    }
+
+    if (overviewTimezone) {
+        overviewTimezone.textContent = `Timezone: ${payload.timezone || "Local"}`;
+    }
+
+    if (overviewCondition) {
+        overviewCondition.textContent = conditionLabel;
+    }
+
+    if (overviewConditionMeta) {
+        overviewConditionMeta.textContent =
+            `${Math.round(payload.current.humidity)}% humidity • ${Number(payload.current.windSpeed).toFixed(1)} km/h wind • ` +
+            `${Number(payload.current.precipitation).toFixed(1)} mm rain`;
+    }
+
+    if (overviewRecordCount) {
+        overviewRecordCount.textContent = `${records.length} entries`;
+    }
+
+    if (overviewRecordMeta) {
+        overviewRecordMeta.textContent = wettestSaved
+            ? `Wettest saved record: ${wettestSaved.date} with ${wettestSaved.rain} mm rainfall.`
+            : "No saved rainfall insights yet.";
+    }
+
+    if (overviewForecastPeak) {
+        overviewForecastPeak.textContent = warmestForecast
+            ? `${formatForecastDay(warmestForecast.time)} • ${Math.round(warmestForecast.maxTemperature)}°C`
+            : "Forecast pending";
+    }
+
+    if (overviewForecastMeta) {
+        overviewForecastMeta.textContent = warmestForecast
+            ? `Lowest temp on that day looks around ${Math.round(warmestForecast.minTemperature)}°C.`
+            : "Load live weather to reveal peak forecast.";
+    }
+
+    if (overviewMapLink) {
+        overviewMapLink.href = `map.html?location=${encodeURIComponent(payload.location)}`;
+    }
+}
+
+function renderPredictionPanel(payload) {
+    if (!predictionLead || !predictionList) {
+        return;
+    }
+
+    if (!payload?.daily?.length) {
+        setPredictionFallback();
+        return;
+    }
+
+    const firstThreeDays = payload.daily.slice(0, 3);
+    const warmestDay = [...payload.daily].sort((a, b) => Number(b.maxTemperature) - Number(a.maxTemperature))[0];
+
+    predictionLead.textContent =
+        `${payload.location} forecast stays active for the next ${firstThreeDays.length} days. ` +
+        `${formatForecastDay(warmestDay.time)} looks warmest at ${Math.round(warmestDay.maxTemperature)}°C.`;
+
+    predictionList.innerHTML = firstThreeDays
+        .map((entry) => {
+            const label = weatherDescriptions[entry.weatherCode] || "Weather";
+            return `
+                <div class="analytics-list-item">
+                    <strong>${formatForecastDay(entry.time)}</strong>
+                    <span>${label} • ${Math.round(entry.maxTemperature)}° / ${Math.round(entry.minTemperature)}°</span>
+                </div>
+            `;
+        })
+        .join("");
+}
+
+async function renderTrendPanel(payload) {
+    if (!payload?.hourly?.length) {
+        setTrendFallback();
+        return;
+    }
+
+    const sampleHours = payload.hourly.slice(0, 6);
+    const sampledTemps = sampleHours.map((entry) => Number(entry.temperature));
+    const firstTemp = Number(sampledTemps[0] ?? payload.current?.temperature ?? 0);
+    const lastTemp = Number(sampledTemps[sampledTemps.length - 1] ?? firstTemp);
+    const delta = lastTemp - firstTemp;
+    const direction = delta > 0.4 ? "Warming" : delta < -0.4 ? "Cooling" : "Stable";
+    const records = await getSavedRecords();
+    const matchingRecords = records.filter((item) => (item.location || "").trim() === payload.location.trim());
+    const recordTemps = matchingRecords
+        .map((item) => Number(item.temp))
+        .filter((value) => !Number.isNaN(value));
+    const averageTemp = recordTemps.length
+        ? `${(recordTemps.reduce((sum, value) => sum + value, 0) / recordTemps.length).toFixed(1)}°C`
+        : "No saved avg";
+    const minTemp = Math.min(...sampledTemps);
+    const maxTemp = Math.max(...sampledTemps);
+    const range = Math.max(maxTemp - minTemp, 1);
+
+    if (trendBars) {
+        trendBars.innerHTML = sampleHours
+            .map((entry) => {
+                const value = Number(entry.temperature);
+                const height = 26 + (((value - minTemp) / range) * 62);
+                return `
+                    <div class="trend-bar-item">
+                        <span class="trend-bar" style="height:${height.toFixed(0)}px;"></span>
+                        <small>${formatForecastHour(entry.time)}</small>
+                    </div>
+                `;
+            })
+            .join("");
+    }
+
+    trendDirection.textContent = direction;
+    trendChange.textContent = `${delta >= 0 ? "+" : ""}${delta.toFixed(1)}°C`;
+    trendAverage.textContent = averageTemp;
+    trendSummary.textContent =
+        `${payload.location} looks ${direction.toLowerCase()} across the next ${sampleHours.length} hourly checkpoints. ` +
+        `Current humidity is ${Math.round(payload.current.humidity)}% and rainfall is ${Number(payload.current.precipitation).toFixed(1)} mm.`;
+}
+
+function fillComparisonCard(primaryPayload, secondaryPayload) {
+    if (!comparisonPrimaryName || !comparisonSecondaryName) {
+        return;
+    }
+
+    comparisonPrimaryName.textContent = primaryPayload.location;
+    comparisonPrimaryStats.textContent =
+        `${Number(primaryPayload.current.temperature).toFixed(1)}°C • ${Math.round(primaryPayload.current.humidity)}% humidity • ` +
+        `${Number(primaryPayload.current.windSpeed).toFixed(1)} km/h wind`;
+
+    comparisonSecondaryName.textContent = secondaryPayload.location;
+    comparisonSecondaryStats.textContent =
+        `${Number(secondaryPayload.current.temperature).toFixed(1)}°C • ${Math.round(secondaryPayload.current.humidity)}% humidity • ` +
+        `${Number(secondaryPayload.current.windSpeed).toFixed(1)} km/h wind`;
+
+    const tempDiff = Number(secondaryPayload.current.temperature) - Number(primaryPayload.current.temperature);
+    const rainDiff = Number(secondaryPayload.current.precipitation) - Number(primaryPayload.current.precipitation);
+
+    comparisonStatus.textContent =
+        `${secondaryPayload.location} is ${tempDiff >= 0 ? Math.abs(tempDiff).toFixed(1) + "°C warmer" : Math.abs(tempDiff).toFixed(1) + "°C cooler"} ` +
+        `than ${primaryPayload.location}, with ${rainDiff >= 0 ? "higher" : "lower"} rainfall right now.`;
+}
+
+async function compareLocations(secondaryLocation) {
+    if (!latestLiveWeather) {
+        setComparisonFallback();
+        if (comparisonStatus) {
+            comparisonStatus.textContent = "Load live weather first, then compare another city.";
+        }
+        return;
+    }
+
+    const compareWith = (secondaryLocation || "").trim();
+
+    if (!compareWith) {
+        setComparisonFallback();
+        return;
+    }
+
+    if (comparisonStatus) {
+        comparisonStatus.textContent = `Comparing ${latestLiveWeather.location} with ${compareWith}...`;
+    }
+
+    try {
+        const secondaryPayload = await fetchDirectLiveWeather(compareWith);
+        fillComparisonCard(latestLiveWeather, secondaryPayload);
+    } catch (error) {
+        if (comparisonStatus) {
+            comparisonStatus.textContent = error.message || "Unable to compare that location right now.";
+        }
+    }
+}
+
+async function refreshAnalytics(payload = latestLiveWeather) {
+    await refreshOverview(payload);
+    renderPredictionPanel(payload);
+    await renderTrendPanel(payload);
+
+    if (payload && comparisonLocationInput?.value.trim()) {
+        await compareLocations(comparisonLocationInput.value.trim());
+    } else {
+        setComparisonFallback();
+    }
+}
+
+function addChatMessage(role, message) {
+    if (!chatMessages) {
+        return null;
+    }
+
+    const bubble = document.createElement("article");
+    bubble.className = `chat-bubble ${role}`;
+    bubble.innerHTML = `
+        <span class="chat-role">${role === "user" ? "You" : "Weather AI"}</span>
+        <p>${message}</p>
+    `;
+
+    chatMessages.appendChild(bubble);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    return bubble;
+}
+
+function setAiSpeakingState(isSpeaking) {
+    if (!chatAiAvatar) {
+        return;
+    }
+
+    chatAiAvatar.classList.toggle("speaking", isSpeaking);
+}
+
+function speakWeatherAi(text) {
+    if (!voiceEnabled || !("speechSynthesis" in window)) {
+        return;
+    }
+
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1;
+    utterance.pitch = 1.05;
+    utterance.onstart = () => setAiSpeakingState(true);
+    utterance.onend = () => setAiSpeakingState(false);
+    utterance.onerror = () => setAiSpeakingState(false);
+    window.speechSynthesis.speak(utterance);
+}
+
+function showTypingBubble() {
+    if (!chatMessages) {
+        return null;
+    }
+
+    const bubble = document.createElement("article");
+    bubble.className = "chat-bubble ai typing";
+    bubble.innerHTML = `
+        <span class="chat-role">Weather AI</span>
+        <div class="typing-dots" aria-label="Weather AI is typing">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    `;
+
+    chatMessages.appendChild(bubble);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    setAiSpeakingState(true);
+    return bubble;
+}
+
+async function revealAiMessage(message) {
+    const typingBubble = showTypingBubble();
+    await new Promise((resolve) => setTimeout(resolve, 700));
+
+    if (typingBubble) {
+        typingBubble.remove();
+    }
+
+    const bubble = addChatMessage("ai", "");
+    if (!bubble) {
+        setAiSpeakingState(false);
+        return;
+    }
+
+    const textNode = bubble.querySelector("p");
+    const words = message.split(" ");
+    let built = "";
+
+    for (const word of words) {
+        built = built ? `${built} ${word}` : word;
+        textNode.textContent = built;
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        await new Promise((resolve) => setTimeout(resolve, 34));
+    }
+
+    setAiSpeakingState(false);
+    speakWeatherAi(message);
+}
+
+async function getSavedRecords() {
+    try {
+        return await fetchJson(`${getApiBase()}/records`);
+    } catch (error) {
+        return [];
+    }
+}
+
+function buildForecastSummaryText() {
+    if (!latestLiveWeather?.daily?.length) {
+        return "I could not find forecast details yet. Try refreshing live weather first.";
+    }
+
+    const nextDays = latestLiveWeather.daily.slice(0, 3).map((entry) => {
+        const day = formatForecastDay(entry.time);
+        return `${day}: ${Math.round(entry.maxTemperature)}° / ${Math.round(entry.minTemperature)}°`;
+    });
+
+    return `Upcoming forecast for ${latestLiveWeather.location}: ${nextDays.join(" | ")}.`;
+}
+
+function buildAdviceText() {
+    if (!latestLiveWeather) {
+        return "Load live weather first, then I can give you umbrella and comfort advice.";
+    }
+
+    const { precipitation, humidity, temperature, windSpeed } = latestLiveWeather.current;
+
+    if (precipitation > 0.2 || humidity > 88) {
+        return `For ${latestLiveWeather.location}, carrying an umbrella is a good idea. Humidity is ${humidity}% and rainfall is ${precipitation} mm right now.`;
+    }
+
+    if (temperature >= 32) {
+        return `It looks hot in ${latestLiveWeather.location}. Stay hydrated and avoid long direct sun exposure if possible.`;
+    }
+
+    if (windSpeed >= 20) {
+        return `It is a bit windy in ${latestLiveWeather.location} with wind around ${windSpeed} km/h, so keep light layers handy.`;
+    }
+
+    return `Weather looks fairly comfortable in ${latestLiveWeather.location}. You probably do not need an umbrella right now.`;
+}
+
+async function buildRecordsSummary() {
+    const records = await getSavedRecords();
+
+    if (!records.length) {
+        return "There are no saved weather records yet.";
+    }
+
+    const temps = records.map((item) => Number(item.temp)).filter((value) => !Number.isNaN(value));
+    const rains = records.map((item) => Number(item.rain)).filter((value) => !Number.isNaN(value));
+    const averageTemp = temps.length
+        ? (temps.reduce((sum, value) => sum + value, 0) / temps.length).toFixed(1)
+        : "--";
+    const wettest = records.reduce((best, item) => {
+        if (!best) return item;
+        return Number(item.rain || 0) > Number(best.rain || 0) ? item : best;
+    }, null);
+
+    return `You have ${records.length} saved records. Average temperature is ${averageTemp} C. The wettest record is ${wettest?.date || "unknown"} in ${wettest?.location || "unknown location"} with ${wettest?.rain || 0} mm rainfall.`;
+}
+
+async function getWeatherAiReply(prompt) {
+    const question = prompt.trim().toLowerCase();
+
+    if (!question) {
+        return "Ask me something about current weather, forecast, rainfall, or saved records.";
+    }
+
+    if (question.includes("record") || question.includes("history") || question.includes("archive")) {
+        return buildRecordsSummary();
+    }
+
+    if (question.includes("forecast") || question.includes("tomorrow") || question.includes("next")) {
+        return buildForecastSummaryText();
+    }
+
+    if (question.includes("umbrella") || question.includes("advice") || question.includes("wear") || question.includes("carry")) {
+        return buildAdviceText();
+    }
+
+    if (
+        question.includes("weather") ||
+        question.includes("temperature") ||
+        question.includes("humidity") ||
+        question.includes("rain") ||
+        question.includes("wind")
+    ) {
+        if (!latestLiveWeather) {
+            return "Live weather is not loaded yet. Press Get Live Weather first.";
+        }
+
+        const current = latestLiveWeather.current;
+        return `Right now in ${latestLiveWeather.location}, temperature is ${current.temperature} C, feels like ${current.apparentTemperature} C, humidity is ${current.humidity}%, rainfall is ${current.precipitation} mm, and wind speed is ${current.windSpeed} km/h.`;
+    }
+
+    return "I can help with current weather, forecast trends, umbrella advice, and record summaries. Try asking about weather now, forecast, or saved records.";
+}
+
+async function handleChatPrompt(prompt) {
+    addChatMessage("user", prompt);
+    const reply = await getWeatherAiReply(prompt);
+    await revealAiMessage(reply);
 }
 
 function showLoader() {
@@ -289,6 +1042,7 @@ async function addRecord() {
         dayField.value = formatDayName();
         showSuccess("Record Added", `Weather data for ${data.date} has been saved.`);
         resultBox.textContent = "Weather record saved.";
+        refreshAnalytics();
     } catch (error) {
         resultBox.textContent = error.message;
     } finally {
@@ -325,12 +1079,89 @@ function setLiveWeatherStatus(message, isError = false) {
     liveStatus.classList.toggle("error-text", isError);
 }
 
-function getWeatherGlyph(weatherCode) {
+function getForecastIconType(weatherCode) {
     if ([0, 1].includes(weatherCode)) return "sun";
-    if ([2, 3, 45, 48].includes(weatherCode)) return "cloud";
+    if ([2, 3].includes(weatherCode)) return "cloud";
+    if ([45, 48].includes(weatherCode)) return "moon";
     if ([61, 63, 65, 80, 81, 82, 51, 53, 55].includes(weatherCode)) return "rain";
     if ([95, 96, 99].includes(weatherCode)) return "storm";
     return "cloud";
+}
+
+function getForecastIconMarkup(weatherCode) {
+    const type = getForecastIconType(weatherCode);
+
+    if (type === "sun") {
+        return `
+            <div class="forecast-icon sun" aria-hidden="true">
+                <svg viewBox="0 0 64 64" role="presentation" class="forecast-icon-svg">
+                    <defs>
+                        <radialGradient id="forecastSunCore" cx="35%" cy="35%">
+                            <stop offset="0%" stop-color="#fff6ad"></stop>
+                            <stop offset="54%" stop-color="#ffd24f"></stop>
+                            <stop offset="100%" stop-color="#ff9d20"></stop>
+                        </radialGradient>
+                    </defs>
+                    <g class="sun-rays" stroke="#ffd056" stroke-width="3.2" stroke-linecap="round">
+                        <line x1="32" y1="6" x2="32" y2="14"></line>
+                        <line x1="32" y1="50" x2="32" y2="58"></line>
+                        <line x1="6" y1="32" x2="14" y2="32"></line>
+                        <line x1="50" y1="32" x2="58" y2="32"></line>
+                        <line x1="14" y1="14" x2="20" y2="20"></line>
+                        <line x1="44" y1="44" x2="50" y2="50"></line>
+                        <line x1="44" y1="20" x2="50" y2="14"></line>
+                        <line x1="14" y1="50" x2="20" y2="44"></line>
+                    </g>
+                    <circle cx="32" cy="32" r="15" fill="url(#forecastSunCore)"></circle>
+                </svg>
+            </div>
+        `;
+    }
+
+    if (type === "cloud") {
+        return `
+            <div class="forecast-icon cloud" aria-hidden="true">
+                <img src="images/cloud.png" alt="Cloud icon" class="forecast-icon-image">
+            </div>
+        `;
+    }
+
+    if (type === "rain") {
+        return `
+            <div class="forecast-icon rain" aria-hidden="true">
+                <img src="images/cloud.png" alt="Rain cloud icon" class="forecast-icon-image">
+                <span class="forecast-drop drop-one"></span>
+                <span class="forecast-drop drop-two"></span>
+                <span class="forecast-drop drop-three"></span>
+            </div>
+        `;
+    }
+
+    if (type === "storm") {
+        return `
+            <div class="forecast-icon storm" aria-hidden="true">
+                <img src="images/cloud.png" alt="Storm cloud icon" class="forecast-icon-image">
+                <span class="forecast-bolt"></span>
+            </div>
+        `;
+    }
+
+    return `
+        <div class="forecast-icon moon" aria-hidden="true">
+            <svg viewBox="0 0 64 64" role="presentation" class="forecast-icon-svg">
+                <defs>
+                    <linearGradient id="forecastMoonFill" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#fff8bf"></stop>
+                        <stop offset="100%" stop-color="#f2dc49"></stop>
+                    </linearGradient>
+                </defs>
+                <circle cx="29" cy="31" r="19" fill="url(#forecastMoonFill)"></circle>
+                <circle cx="39" cy="24" r="18" fill="#18304b"></circle>
+                <circle cx="18" cy="16" r="2.4" fill="#bfe8ff"></circle>
+                <circle cx="47" cy="18" r="1.8" fill="#9dd7ff"></circle>
+            </svg>
+        </div>
+    `;
 }
 
 function formatForecastHour(isoTime) {
@@ -403,15 +1234,15 @@ function renderDailyForecast(daily = []) {
 
     forecastContainer.innerHTML = daily
         .map((entry, index) => {
-            const glyph = getWeatherGlyph(entry.weatherCode);
             const cardClass = index === 0 ? "forecast-day active" : "forecast-day";
+            const weatherLabel = weatherDescriptions[entry.weatherCode] || "Weather";
 
             return `
                 <article class="${cardClass}">
+                    <span class="forecast-day-glow" aria-hidden="true"></span>
                     <span class="forecast-name">${formatForecastDay(entry.time)}</span>
-                    <div class="forecast-icon ${glyph}">
-                        <span></span>
-                    </div>
+                    ${getForecastIconMarkup(entry.weatherCode)}
+                    <span class="forecast-label">${weatherLabel}</span>
                     <div class="forecast-temps">
                         <strong>${Math.round(entry.maxTemperature)}°</strong>
                         <span>${Math.round(entry.minTemperature)}°</span>
@@ -442,6 +1273,8 @@ function updateLiveWeatherUI(payload) {
     setLiveWeatherStatus(`${weatherText} in ${payload.location}`);
     renderHourlyForecast(payload.hourly || []);
     renderDailyForecast(payload.daily || []);
+    syncWeatherMapToLocation(payload);
+    refreshAnalytics(payload);
 }
 
 async function loadLiveWeather(location = locationInput.value.trim() || "Dhaka") {
@@ -551,6 +1384,156 @@ if (useLiveWeatherBtn) {
     useLiveWeatherBtn.addEventListener("click", useLiveWeatherInForm);
 }
 
+if (radarToggleBtn) {
+    radarToggleBtn.addEventListener("click", async () => {
+        stopRadarAnimation();
+        activeWeatherOverlay = "radar";
+        radarVisible = true;
+        renderWeatherMapEmbed();
+    });
+}
+
+if (recenterMapBtn) {
+    recenterMapBtn.addEventListener("click", async () => {
+        mapZoomLevel = 6;
+        renderWeatherMapEmbed();
+    });
+}
+
+if (refreshRadarBtn) {
+    refreshRadarBtn.addEventListener("click", async () => {
+        stopRadarAnimation();
+        renderWeatherMapEmbed();
+    });
+}
+
+if (zoomOutMapBtn) {
+    zoomOutMapBtn.addEventListener("click", async () => {
+        mapZoomLevel = Math.max(3, mapZoomLevel - 1);
+        renderWeatherMapEmbed();
+    });
+}
+
+if (labelsToggleBtn) {
+    labelsToggleBtn.addEventListener("click", async () => {
+        stopRadarAnimation();
+        activeWeatherOverlay = "wind";
+        renderWeatherMapEmbed();
+    });
+}
+
+if (mapModeSatelliteBtn) {
+    mapModeSatelliteBtn.addEventListener("click", async () => {
+        stopRadarAnimation();
+        activeWeatherOverlay = "clouds";
+        renderWeatherMapEmbed();
+    });
+}
+
+if (mapModeStreetBtn) {
+    mapModeStreetBtn.addEventListener("click", async () => {
+        stopRadarAnimation();
+        activeWeatherOverlay = "temp";
+        renderWeatherMapEmbed();
+    });
+}
+
+if (mapPlayBtn) {
+    mapPlayBtn.addEventListener("click", async () => {
+        if (radarPlaying) {
+            stopRadarAnimation();
+            renderWeatherMapEmbed();
+            return;
+        }
+
+        activeWeatherOverlay = "radar";
+        startRadarAnimation();
+        renderWeatherMapEmbed();
+    });
+}
+
+if (comparisonForm) {
+    comparisonForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        await compareLocations(comparisonLocationInput.value.trim());
+    });
+}
+
+dashboardChips.forEach((chip) => {
+    chip.addEventListener("click", () => {
+        const location = chip.dataset.quickLocation || "";
+
+        if (!location) {
+            return;
+        }
+
+        locationInput.value = location;
+        loadLiveWeather(location);
+    });
+});
+
+weatherNewsTabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+        const channelSrc = tab.dataset.channelSrc || "";
+        const channelLink = tab.dataset.channelLink || "";
+        const title = tab.dataset.channelTitle || "Weather TV channel";
+
+        weatherNewsTabs.forEach((item) => item.classList.remove("active"));
+        tab.classList.add("active");
+        setWeatherChannelSource(channelSrc, channelLink, title);
+    });
+});
+
+if (fullscreenMapBtn && weatherMapShell) {
+    fullscreenMapBtn.addEventListener("click", async () => {
+        try {
+            if (document.fullscreenElement === weatherMapShell) {
+                await document.exitFullscreen();
+            } else {
+                await weatherMapShell.requestFullscreen();
+            }
+        } catch (error) {
+            setLiveWeatherStatus("Fullscreen mode is not available in this browser.", true);
+        } finally {
+            updateFullscreenButton();
+        }
+    });
+}
+
+document.addEventListener("fullscreenchange", updateFullscreenButton);
+
+if (chatForm) {
+    chatForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const prompt = chatInput.value.trim();
+
+        if (!prompt) {
+            return;
+        }
+
+        chatInput.value = "";
+        await handleChatPrompt(prompt);
+    });
+}
+
+chatChips.forEach((chip) => {
+    chip.addEventListener("click", async () => {
+        await handleChatPrompt(chip.dataset.chatPrompt || chip.textContent || "");
+    });
+});
+
+if (voiceToggleBtn) {
+    voiceToggleBtn.addEventListener("click", () => {
+        voiceEnabled = !voiceEnabled;
+        voiceToggleBtn.textContent = voiceEnabled ? "Voice On" : "Voice Off";
+
+        if (!voiceEnabled && "speechSynthesis" in window) {
+            window.speechSynthesis.cancel();
+            setAiSpeakingState(false);
+        }
+    });
+}
+
 document.addEventListener("mousemove", (event) => {
     const x = event.clientX / window.innerWidth;
     const y = event.clientY / window.innerHeight;
@@ -563,4 +1546,11 @@ dayField.value = formatDayName();
 setInterval(controlRain, 3000);
 controlRain();
 autoLightning();
+ensureWeatherMap();
+updateFullscreenButton();
+setPredictionFallback();
+setTrendFallback();
+setComparisonFallback();
+setOverviewFallback();
 loadLiveWeather();
+

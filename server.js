@@ -12,12 +12,43 @@ app.use(express.json());
 app.use(express.static(__dirname));
 
 function readData() {
-    if (!fs.existsSync(FILE)) return [];
-    return JSON.parse(fs.readFileSync(FILE, "utf8"));
+    if (!fs.existsSync(FILE)) {
+        return [];
+    }
+
+    try {
+        const parsed = JSON.parse(fs.readFileSync(FILE, "utf8"));
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+        return [];
+    }
 }
 
 function writeData(data) {
     fs.writeFileSync(FILE, JSON.stringify(data, null, 2));
+}
+
+function normalizeText(value, fallback = "") {
+    return String(value ?? fallback).trim();
+}
+
+function normalizeRecord(payload = {}) {
+    return {
+        date: normalizeText(payload.date),
+        location: normalizeText(payload.location),
+        day: normalizeText(payload.day),
+        temp: normalizeText(payload.temp),
+        hum: normalizeText(payload.hum),
+        rain: normalizeText(payload.rain)
+    };
+}
+
+function isValidRecord(record) {
+    return Boolean(record.date && record.temp && record.hum && record.rain);
+}
+
+function isValidIndex(index, collection) {
+    return Number.isInteger(index) && index >= 0 && index < collection.length;
 }
 
 async function getJson(url) {
@@ -73,26 +104,54 @@ function buildForecastSummary(forecastData) {
 }
 
 app.get("/records", (req, res) => {
-    res.json(readData());
+    const data = readData().map((item) => normalizeRecord(item));
+    res.json(data);
 });
 
 app.post("/add", (req, res) => {
     const data = readData();
-    data.push(req.body);
+    const record = normalizeRecord(req.body);
+
+    if (!isValidRecord(record)) {
+        return res.status(400).json({
+            error: "Date, temperature, humidity, and rainfall are required."
+        });
+    }
+
+    data.push(record);
     writeData(data);
     res.json({ message: "Added" });
 });
 
 app.delete("/delete/:index", (req, res) => {
     const data = readData();
-    data.splice(Number(req.params.index), 1);
+    const index = Number(req.params.index);
+
+    if (!isValidIndex(index, data)) {
+        return res.status(404).json({ error: "Record not found." });
+    }
+
+    data.splice(index, 1);
     writeData(data);
     res.json({ message: "Deleted" });
 });
 
 app.put("/update/:index", (req, res) => {
     const data = readData();
-    data[Number(req.params.index)] = req.body;
+    const index = Number(req.params.index);
+    const record = normalizeRecord(req.body);
+
+    if (!isValidIndex(index, data)) {
+        return res.status(404).json({ error: "Record not found." });
+    }
+
+    if (!isValidRecord(record)) {
+        return res.status(400).json({
+            error: "Date, temperature, humidity, and rainfall are required."
+        });
+    }
+
+    data[index] = record;
     writeData(data);
     res.json({ message: "Updated" });
 });

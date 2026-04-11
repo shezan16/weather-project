@@ -6,7 +6,7 @@
     <title>Weather Records</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="records-page">
     <div class="records-weather-scene" aria-hidden="true">
         <div class="records-cloud cloud-a"></div>
         <div class="records-cloud cloud-b"></div>
@@ -34,17 +34,46 @@
         </div>
 
         <div class="nav-right">
+            <a href="map.html?location=Dhaka" class="nav-link">Map</a>
             <a href="index.html" class="nav-link">Dashboard</a>
         </div>
     </nav>
 
-    <div class="container">
+    <div class="container" data-reveal>
         <div class="records-header">
             <div>
                 <p class="records-kicker">Weather archive</p>
                 <h2>All Weather Records</h2>
             </div>
             <a href="index.html#liveWeatherForm" class="records-pill">Live archive view</a>
+        </div>
+
+        <div class="records-overview-grid">
+            <article class="overview-card records-overview-card">
+                <span class="overview-label">Total Records</span>
+                <strong id="recordsTotal">--</strong>
+                <p id="recordsTotalMeta">Saved entries will appear here.</p>
+            </article>
+            <article class="overview-card records-overview-card">
+                <span class="overview-label">Average Temp</span>
+                <strong id="recordsAverageTemp">--</strong>
+                <p id="recordsAverageMeta">Average temperature insight.</p>
+            </article>
+            <article class="overview-card records-overview-card">
+                <span class="overview-label">Wettest Entry</span>
+                <strong id="recordsWettest">--</strong>
+                <p id="recordsWettestMeta">Highest rainfall day.</p>
+            </article>
+            <article class="overview-card records-overview-card">
+                <span class="overview-label">Latest Entry</span>
+                <strong id="recordsLatest">--</strong>
+                <p id="recordsLatestMeta">Most recent saved weather.</p>
+            </article>
+        </div>
+
+        <div class="records-toolbar">
+            <input id="recordFilterInput" type="text" placeholder="Filter by date, city, or day">
+            <button id="clearFilterBtn" type="button" class="secondary-button">Clear Filter</button>
         </div>
 
         <table id="table">
@@ -62,6 +91,16 @@
         <button onclick="goBack()" class="secondary-button">Back</button>
     </div>
 
+    <footer class="site-footer" data-reveal>
+        <strong>Weather Project Suite</strong>
+        <div class="site-footer-links">
+            <a href="index.html">Dashboard</a>
+            <a href="map.html?location=Dhaka">Map</a>
+        </div>
+        <span class="footer-clock-value">--:--</span>
+    </footer>
+
+    <script src="ui.js"></script>
     <script src="records.js"></script>
 </body>
 </html>

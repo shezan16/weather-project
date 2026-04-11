@@ -6,11 +6,18 @@
     <title>Our Team</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="team-page">
     <div class="team-scene" aria-hidden="true">
         <div class="team-glow glow-a"></div>
         <div class="team-glow glow-b"></div>
         <div class="team-grid-lines"></div>
+        <div class="team-prism prism-a"></div>
+        <div class="team-prism prism-b"></div>
+        <div class="team-ring ring-a"></div>
+        <div class="team-ring ring-b"></div>
+        <div class="team-particle particle-a"></div>
+        <div class="team-particle particle-b"></div>
+        <div class="team-particle particle-c"></div>
     </div>
 
     <nav>
@@ -22,68 +29,114 @@
         </div>
 
         <div class="nav-right">
+            <a href="map.html?location=Dhaka" class="nav-link">Map</a>
             <a href="index.html" class="nav-link">Dashboard</a>
         </div>
     </nav>
 
-    <div class="container">
+    <div class="container" data-reveal>
         <div class="team-hero">
-            <div>
-                <p class="records-kicker">Creative weather lab</p>
+            <div class="team-hero-copy">
+                <p class="records-kicker">Project team</p>
                 <h2>People Behind The Weather Project</h2>
                 <p class="team-subtext">
                     This project was designed and built by a collaborative team focused on data,
                     interface design, and a polished user experience.
                 </p>
+                <div class="team-hero-stats">
+                    <article class="team-stat-card">
+                        <span>Experience</span>
+                        <strong>Design + Data</strong>
+                    </article>
+                    <article class="team-stat-card">
+                        <span>Delivery</span>
+                        <strong>Live Weather Project</strong>
+                    </article>
+                    <article class="team-stat-card">
+                        <span>Focus</span>
+                        <strong>Premium Dashboard UX</strong>
+                    </article>
+                </div>
             </div>
             <div class="team-summary-card">
                 <span class="team-summary-label">Core team</span>
                 <strong>5 Members</strong>
                 <p>Design, development, records flow, and live weather experience.</p>
+                <div class="team-summary-orbit" aria-hidden="true">
+                    <span class="orbit-node node-a"></span>
+                    <span class="orbit-node node-b"></span>
+                    <span class="orbit-node node-c"></span>
+                </div>
             </div>
         </div>
 
         <div class="team">
             <div class="member">
                 <span class="member-badge">Lead</span>
-                <img src="images/WhatsApp Image 2026-04-04 at 3.17.39 AM.jpeg" alt="Ridwan Ahamed Shezan">
+                <div class="member-avatar-shell">
+                    <span class="member-avatar-glow"></span>
+                    <img src="images/WhatsApp Image 2026-04-04 at 3.17.39 AM.jpeg" alt="Ridwan Ahamed Shezan">
+                </div>
                 <h3>Ridwan Ahamed Shezan</h3>
                 <p class="member-role">Project Lead</p>
                 <p>ID: 252-15-137</p>
             </div>
 
             <div class="member">
-                <span class="member-badge">Data</span>
-                <img src="images/shahadat.jpg" alt="Shahadat Hossain">
+                <span class="member-badge">Strategy</span>
+                <div class="member-avatar-shell">
+                    <span class="member-avatar-glow"></span>
+                    <img src="images/shahadat.jpg" alt="Shahadat Hossain">
+                </div>
                 <h3>Shahadat Hossain</h3>
-                <p class="member-role">Data & Records</p>
+                <p class="member-role">Data Strategy</p>
                 <p>ID: 252-15-389</p>
             </div>
 
             <div class="member">
-                <span class="member-badge">Build</span>
-                <img src="images/abdullah.jpeg" alt="Md. Abdullah Sarder">
+                <span class="member-badge">System</span>
+                <div class="member-avatar-shell">
+                    <span class="member-avatar-glow"></span>
+                    <img src="images/abdullah.jpeg" alt="Md. Abdullah Sarder">
+                </div>
                 <h3>Md. Abdullah Sarder</h3>
-                <p class="member-role">Backend Support</p>
+                <p class="member-role">Backend Engineer</p>
                 <p>ID: 252-15-251</p>
             </div>
 
             <div class="member">
-                <span class="member-badge">UI</span>
-                <img src="images/fahad.png" alt="Fahad Shahriar Mahim">
+                <span class="member-badge">Visuals</span>
+                <div class="member-avatar-shell">
+                    <span class="member-avatar-glow"></span>
+                    <img src="images/fahad.png" alt="Fahad Shahriar Mahim">
+                </div>
                 <h3>Fahad Shahriar Mahim</h3>
-                <p class="member-role">UI Designer</p>
+                <p class="member-role">UI Motion Designer</p>
                 <p>ID: 252-15-260</p>
             </div>
 
             <div class="member">
-                <span class="member-badge">QA</span>
-                <img src="images/ratul.png" alt="Ashik Zaman Ratul">
+                <span class="member-badge">Quality</span>
+                <div class="member-avatar-shell">
+                    <span class="member-avatar-glow"></span>
+                    <img src="images/ratul.png" alt="Ashik Zaman Ratul">
+                </div>
                 <h3>Ashik Zaman Ratul</h3>
-                <p class="member-role">Testing & Review</p>
+                <p class="member-role">QA + Records Flow</p>
                 <p>ID: 252-15-528</p>
             </div>
         </div>
     </div>
+
+    <footer class="site-footer" data-reveal>
+        <strong>Weather Project Suite</strong>
+        <div class="site-footer-links">
+            <a href="index.html">Dashboard</a>
+            <a href="map.html?location=Dhaka">Map</a>
+        </div>
+        <span class="footer-clock-value">--:--</span>
+    </footer>
+
+    <script src="ui.js"></script>
 </body>
 </html>

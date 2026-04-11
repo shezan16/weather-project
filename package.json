@@ -2,7 +2,7 @@
   "name": "weather-project",
   "version": "1.0.0",
   "description": "",
-  "main": "records.js",
+  "main": "server.js",
   "dependencies": {
     "accepts": "^2.0.0",
     "bcrypt": "^6.0.0",

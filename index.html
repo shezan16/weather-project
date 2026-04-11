@@ -6,7 +6,7 @@
     <title>Weather Data Analysis System</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="dashboard-page">
     <div class="rain" id="rainLayer"></div>
 
     <nav>
@@ -19,6 +19,7 @@
         </div>
 
         <div class="nav-right">
+            <a href="map.html?location=Dhaka" class="nav-link">Map</a>
             <a href="records.html" class="nav-link">Records</a>
             <a href="team.html" class="team-icon">
                 <img src="images/Untitled.png" alt="Team">
@@ -28,14 +29,53 @@
     </nav>
 
     <main class="layout">
-        <section class="hero-card">
-            <div class="hero-copy">
-                <p class="eyebrow">Real-time weather lookup</p>
-                <h2>Track live conditions and save your own weather entries.</h2>
-                <p class="hero-text">
-                    Search any city to load current temperature, humidity, rainfall, wind speed,
-                    and apparent temperature, then save that snapshot into your record list.
-                </p>
+        <section class="hero-card" data-reveal>
+            <div class="hero-map-column">
+                <div class="hero-copy">
+                    <p class="eyebrow">Real-time weather lookup</p>
+                    <h2>Track live conditions and save your own weather entries.</h2>
+                    <p class="hero-text">
+                        Search any city to load current temperature, humidity, rainfall, wind speed,
+                        and apparent temperature, then save that snapshot into your record list.
+                    </p>
+                </div>
+
+                <section class="weather-map-card hero-map-card">
+                    <div class="weather-map-header">
+                        <div class="weather-map-actions">
+                            <div id="mapCityPill" class="records-pill">Center: Dhaka</div>
+                            <div id="mapLayerStatus" class="records-pill">Tap to open full map</div>
+                            <div id="mapTimelinePill" class="records-pill">11 Apr 03:00</div>
+                        </div>
+                    </div>
+
+                    <div class="weather-map-preview-shell" id="weatherMapShell">
+                        <div class="weather-map-ui weather-map-brand">
+                            <div class="map-brand-badge">
+                                <span class="map-brand-orb"></span>
+                                <div>
+                                    <strong>WEATHER</strong>
+                                    <span>MAP PREVIEW</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <a id="mapOpenLink" href="map.html?location=Dhaka" class="map-preview-link" aria-label="Open fullscreen live map">
+                            <div class="map-preview-copy">
+                                <span class="map-preview-label">Live preview</span>
+                                <strong>Open Fullscreen Map</strong>
+                                <span>Tap anywhere on this map preview</span>
+                            </div>
+                        </a>
+
+                        <div class="weather-map-overlay">
+                            <span class="map-pulse pulse-one"></span>
+                            <span class="map-pulse pulse-two"></span>
+                            <span class="map-pulse pulse-three"></span>
+                        </div>
+                        <div id="weatherMap" class="weather-map-canvas weather-map-preview-canvas" aria-label="Live weather map preview"></div>
+                    </div>
+                </section>
             </div>
 
             <div class="live-weather-card">
@@ -44,7 +84,10 @@
                         <p class="eyebrow">Current weather</p>
                         <h3 id="liveLocation">Dhaka, Bangladesh</h3>
                     </div>
-                    <button id="refreshLiveWeatherBtn" type="button" class="secondary-button">Refresh</button>
+                    <div class="live-weather-header-actions">
+                        <a id="liveWeatherMapLink" href="map.html?location=Dhaka" class="records-pill">Weather Map</a>
+                        <button id="refreshLiveWeatherBtn" type="button" class="secondary-button">Refresh</button>
+                    </div>
                 </div>
 
                 <form id="liveWeatherForm" class="live-search-form">
@@ -91,10 +134,166 @@
                 </section>
 
                 <button id="useLiveWeatherBtn" type="button">Use Live Weather In Form</button>
+
+                <div class="weather-news-inline" aria-labelledby="weatherNewsTitle">
+                    <div class="weather-news-header">
+                        <div>
+                            <p class="eyebrow">Weather TV channel</p>
+                            <h3 id="weatherNewsTitle">WeatherNation Live TV</h3>
+                        </div>
+                        <div class="weather-news-links">
+                            <a id="weatherNewsLink" class="records-pill weather-news-link"<iframe width="560" height="315" src="https://www.youtube.com/embed/wt6SIE7BXS8?si=IJfW5brFZslh5qsz" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>>Open WeatherNation</a>
+                        </div>
+                    </div>
+
+                    <div class="weather-news-tabs" aria-label="Weather TV channels">
+                        <button
+                            id="weatherChannelSwitchBtn"
+                            type="button"
+                            class="weather-news-tab active"
+                        >Switch Channel: WeatherNation Live</button>
+                    </div>
+
+                    <div class="weather-news-player">
+                        <iframe
+                            id="weatherNewsFrame"
+                            src="https://www.youtube-nocookie.com/embed/3kxCeMKu-YQ?rel=0"
+                            title="Weather TV channel"
+                            loading="lazy"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowfullscreen
+                        ></iframe>
+                        <div id="weatherNewsFallback" class="weather-news-fallback" hidden>
+                            <strong id="weatherNewsFallbackTitle">FOX Weather Live</strong>
+                            <p>This channel opens best in a separate tab because the provider blocks direct embed playback.</p>
+                            <a id="weatherNewsFallbackLink" class="records-pill weather-news-link" href="https://www.foxweather.com/live" target="_blank" rel="noreferrer">Open Channel</a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
-        <section class="container">
+        <section class="container dashboard-overview" data-reveal>
+            <div class="dashboard-overview-header">
+                <div>
+                    <p class="records-kicker">Operational snapshot</p>
+                    <h2>Live Dashboard Overview</h2>
+                </div>
+                <div class="dashboard-quick-actions">
+                    <button type="button" class="secondary-button dashboard-chip" data-quick-location="Dhaka">Dhaka</button>
+                    <button type="button" class="secondary-button dashboard-chip" data-quick-location="Chattogram">Chattogram</button>
+                    <button type="button" class="secondary-button dashboard-chip" data-quick-location="Sylhet">Sylhet</button>
+                    <a href="map.html?location=Dhaka" id="overviewMapLink" class="records-pill dashboard-map-link">Open Pro Map</a>
+                </div>
+            </div>
+
+            <div class="dashboard-overview-grid">
+                <article class="overview-card">
+                    <span class="overview-label">Active City</span>
+                    <strong id="overviewLocation">Dhaka, Bangladesh</strong>
+                    <p id="overviewTimezone">Timezone will appear here.</p>
+                </article>
+
+                <article class="overview-card">
+                    <span class="overview-label">Current Condition</span>
+                    <strong id="overviewCondition">--</strong>
+                    <p id="overviewConditionMeta">Humidity, wind, and rainfall snapshot.</p>
+                </article>
+
+                <article class="overview-card">
+                    <span class="overview-label">Saved Records</span>
+                    <strong id="overviewRecordCount">--</strong>
+                    <p id="overviewRecordMeta">Record insights will appear here.</p>
+                </article>
+
+                <article class="overview-card">
+                    <span class="overview-label">Forecast Focus</span>
+                    <strong id="overviewForecastPeak">--</strong>
+                    <p id="overviewForecastMeta">The strongest forecast day will appear here.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="container analytics-section" data-reveal>
+            <div class="analytics-header">
+                <p class="records-kicker">Weather intelligence</p>
+            </div>
+
+            <div class="analytics-grid">
+                <article class="analytics-card">
+                    <div class="analytics-card-header">
+                        <p class="eyebrow">Weather Prediction</p>
+                        <h3>Forecasting</h3>
+                    </div>
+                    <p id="predictionLead" class="analytics-lead">Load live weather to see the next forecast window.</p>
+                    <div id="predictionList" class="analytics-list analytics-body">
+                        <div class="analytics-list-item">Forecast updates will appear here.</div>
+                    </div>
+                </article>
+
+                <article class="analytics-card">
+                    <div class="analytics-card-header">
+                        <p class="eyebrow">Trend Analysis</p>
+                        <h3>Temperature + Rain Trend</h3>
+                    </div>
+                    <div class="analytics-subheader">
+                        <span class="analytics-subheader-label">Live trend window</span>
+                        <strong>Next 6 hourly checkpoints</strong>
+                    </div>
+                    <p id="trendSummary" class="analytics-lead">Trend insights will appear after live weather loads.</p>
+                    <div class="analytics-body analytics-body-trend">
+                        <div id="trendBars" class="trend-bars" aria-label="Temperature trend bars">
+                            <div class="trend-bar-item">
+                                <span class="trend-bar"></span>
+                                <small>--</small>
+                            </div>
+                        </div>
+                        <div class="analytics-metrics">
+                            <div class="analytics-metric">
+                                <span>Direction</span>
+                                <strong id="trendDirection">--</strong>
+                            </div>
+                            <div class="analytics-metric">
+                                <span>Hourly change</span>
+                                <strong id="trendChange">--</strong>
+                            </div>
+                            <div class="analytics-metric">
+                                <span>Saved avg</span>
+                                <strong id="trendAverage">--</strong>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="analytics-card">
+                    <div class="analytics-card-header">
+                        <p class="eyebrow">Location Comparison</p>
+                        <h3>Compare Cities</h3>
+                    </div>
+                    <p id="comparisonStatus" class="analytics-lead">Compare your selected city with another location.</p>
+                    <div class="analytics-body analytics-body-compare">
+                        <form id="comparisonForm" class="comparison-form">
+                            <input id="comparisonLocationInput" type="text" placeholder="Compare with another city" value="Chattogram" autocomplete="off">
+                            <button type="submit">Compare</button>
+                        </form>
+                        <div class="comparison-cards">
+                            <div class="comparison-card">
+                                <span class="comparison-label">Current city</span>
+                                <strong id="comparisonPrimaryName">--</strong>
+                                <p id="comparisonPrimaryStats">--</p>
+                            </div>
+                            <div class="comparison-card">
+                                <span class="comparison-label">Compared city</span>
+                                <strong id="comparisonSecondaryName">--</strong>
+                                <p id="comparisonSecondaryStats">--</p>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section class="container" data-reveal>
             <h2>Weather Data Entry</h2>
 
             <form id="recordForm" class="entry-form">
@@ -116,7 +315,18 @@
 
             <h3 id="result" class="result-text"></h3>
         </section>
+
     </main>
+
+    <footer class="site-footer" data-reveal>
+        <strong>Weather Project Suite</strong>
+        <div class="site-footer-links">
+            <a href="map.html?location=Dhaka">Map</a>
+            <a href="records.html">Records</a>
+            <a href="team.html">Team</a>
+        </div>
+        <span class="footer-clock-value">--:--</span>
+    </footer>
 
     <div id="successBox" class="success-box" aria-live="polite">
         <div class="success-badge">OK</div>
@@ -131,6 +341,7 @@
     <audio id="successSound" src="https://www.myinstants.com/media/sounds/tada-fanfare.mp3"></audio>
     <div id="loader" class="loader" aria-hidden="true"></div>
 
+    <script src="ui.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
