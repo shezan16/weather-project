@@ -9,9 +9,15 @@ const recordsLatest = document.getElementById("recordsLatest");
 const recordsLatestMeta = document.getElementById("recordsLatestMeta");
 const recordFilterInput = document.getElementById("recordFilterInput");
 const clearFilterBtn = document.getElementById("clearFilterBtn");
+const authUserName = document.getElementById("authUserName");
+const authLogoutBtn = document.getElementById("authLogoutBtn");
 let allRecords = [];
 
 function getApiBase() {
+    if (window.location.protocol === "file:") {
+        return "http://localhost:3000";
+    }
+
     const isLocalHost = ["localhost", "127.0.0.1"].includes(window.location.hostname);
 
     if (isLocalHost && window.location.port && window.location.port !== "3000") {
@@ -22,21 +28,81 @@ function getApiBase() {
 }
 
 async function fetchJson(url, options) {
-    const response = await fetch(url, options);
-    const contentType = response.headers.get("content-type") || "";
-    const rawText = await response.text();
+    const tryLocalFallback = async () => {
+        if (!window.weatherLocalApi?.request) {
+            return null;
+        }
 
-    if (!contentType.includes("application/json")) {
-        throw new Error("Server returned an unexpected response.");
+        return window.weatherLocalApi.request(url, options);
+    };
+
+    try {
+        const response = await fetch(url, {
+            credentials: "include",
+            ...options
+        });
+        const contentType = response.headers.get("content-type") || "";
+        const rawText = await response.text();
+
+        if (!contentType.includes("application/json")) {
+            const fallbackPayload = await tryLocalFallback();
+
+            if (fallbackPayload !== null) {
+                return fallbackPayload;
+            }
+
+            throw new Error("Server returned an unexpected response.");
+        }
+
+        const payload = JSON.parse(rawText);
+
+        if (!response.ok) {
+            throw new Error(payload.error || "Request failed.");
+        }
+
+        return payload;
+    } catch (error) {
+        const fallbackPayload = await tryLocalFallback();
+
+        if (fallbackPayload !== null) {
+            return fallbackPayload;
+        }
+
+        throw error;
+    }
+}
+
+function updateAuthShell(user) {
+    if (authUserName) {
+        authUserName.textContent = user?.name ? `Hi, ${user.name}` : "Signed in";
+    }
+}
+
+async function ensureAuthenticatedPage() {
+    try {
+        const session = await fetchJson(`${getApiBase()}/api/auth/me`);
+
+        if (!session.authenticated || !session.user) {
+            window.location.href = "login.html";
+            return false;
+        }
+
+        updateAuthShell(session.user);
+        return true;
+    } catch (error) {
+        window.location.href = "login.html";
+        return false;
+    }
+}
+
+async function logoutSession() {
+    try {
+        await fetchJson(`${getApiBase()}/api/auth/logout`, { method: "POST" });
+    } catch (error) {
+        // Redirect anyway so the user can sign in again.
     }
 
-    const payload = JSON.parse(rawText);
-
-    if (!response.ok) {
-        throw new Error(payload.error || "Request failed.");
-    }
-
-    return payload;
+    window.location.href = "login.html";
 }
 
 function renderHeader() {
@@ -144,7 +210,7 @@ function renderRows(records) {
         const button = document.createElement("button");
         button.type = "button";
         button.textContent = "Delete";
-        button.addEventListener("click", () => deleteRecord(allRecords.indexOf(item)));
+        button.addEventListener("click", () => deleteRecord(item.id));
         actionCell.appendChild(button);
     });
 }
@@ -176,7 +242,7 @@ async function loadData() {
     }
 }
 
-async function deleteRecord(index) {
+async function deleteRecord(recordId) {
     const confirmed = window.confirm("Delete this weather record?");
 
     if (!confirmed) {
@@ -184,7 +250,7 @@ async function deleteRecord(index) {
     }
 
     try {
-        await fetchJson(`${getApiBase()}/delete/${index}`, { method: "DELETE" });
+        await fetchJson(`${getApiBase()}/delete/${recordId}`, { method: "DELETE" });
         loadData();
     } catch (error) {
         window.alert(error.message || "Unable to delete the record right now.");
@@ -204,4 +270,16 @@ clearFilterBtn?.addEventListener("click", () => {
     applyFilter();
 });
 
-loadData();
+authLogoutBtn?.addEventListener("click", logoutSession);
+
+async function initializeRecordsPage() {
+    const isAuthenticated = await ensureAuthenticatedPage();
+
+    if (!isAuthenticated) {
+        return;
+    }
+
+    loadData();
+}
+
+initializeRecordsPage();

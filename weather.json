@@ -1,41 +1,67 @@
 [
   {
+    "id": "d0e5ad09-2b5c-437b-a249-6bd4a8ca9001",
+    "userId": "",
     "date": "10-12-2021",
+    "location": "",
+    "day": "",
     "temp": "33",
     "hum": "-28",
     "rain": "31"
   },
   {
+    "id": "23645e79-ff3d-445b-bdb5-b92fa22972ed",
+    "userId": "",
     "date": "35-12-2007",
+    "location": "",
+    "day": "",
     "temp": "-18",
     "hum": "18",
     "rain": "20"
   },
   {
+    "id": "4ea584a3-c55b-4414-8b6c-03f276f9660c",
+    "userId": "",
     "date": "24-10-2001",
+    "location": "",
+    "day": "",
     "temp": "22",
     "hum": "14",
     "rain": "12"
   },
   {
+    "id": "8d4eed55-99a9-4c39-8937-e3eaf5ca6e19",
+    "userId": "",
     "date": "25-12-2010",
+    "location": "",
+    "day": "",
     "temp": "39",
     "hum": "33",
     "rain": "36"
   },
   {
+    "id": "060e1fc0-4bd3-4801-b633-49f5790965a2",
+    "userId": "",
     "date": "10-04-2026",
+    "location": "",
+    "day": "",
     "temp": "20.9",
     "hum": "99",
     "rain": "0"
   },
   {
+    "id": "a2e692a3-6474-47bb-9fc3-473c1622e6f4",
+    "userId": "",
     "date": "10-04-2026",
+    "location": "",
+    "day": "",
     "temp": "15.6",
     "hum": "92",
     "rain": "0.3"
   },
   {
+    "id": "3e92a666-925f-44d8-989f-e5f6b350aaea",
+    "userId": "",
     "date": "10-04-2026",
     "location": "Dhaka, Dhaka Division, Bangladesh",
     "day": "Friday",
@@ -44,6 +70,8 @@
     "rain": "0"
   },
   {
+    "id": "c8ea97f8-ec8a-43b3-97b9-91b03ff0a760",
+    "userId": "",
     "date": "10-04-2026",
     "location": "Dhaka, Dhaka Division, Bangladesh",
     "day": "Friday",
@@ -52,6 +80,8 @@
     "rain": "0"
   },
   {
+    "id": "50dee655-ff05-43cd-ba47-975430b05939",
+    "userId": "",
     "date": "10-04-2026",
     "location": "Dhaka, Dhaka Division, Bangladesh",
     "day": "Friday",
@@ -60,6 +90,8 @@
     "rain": "0"
   },
   {
+    "id": "9610024c-d425-494d-bfd1-31f5fc769c76",
+    "userId": "",
     "date": "10-04-2026",
     "location": "Pakistan, Pakistan",
     "day": "Friday",
@@ -68,6 +100,8 @@
     "rain": "0"
   },
   {
+    "id": "bf4375d0-b444-4102-a6e6-28954dcd6fa2",
+    "userId": "",
     "date": "10-04-2026",
     "location": "Pakistan, Pakistan",
     "day": "Friday",
@@ -76,6 +110,8 @@
     "rain": "0"
   },
   {
+    "id": "5612315c-13a7-4e5f-a9fd-793999df7be9",
+    "userId": "",
     "date": "10-04-2026",
     "location": "Mymensingh, Mymensingh Division, Bangladesh",
     "day": "Friday",
@@ -84,6 +120,8 @@
     "rain": "0.1"
   },
   {
+    "id": "9e9415d4-c5ba-40c3-b4e7-6eb811c78986",
+    "userId": "",
     "date": "11-04-2026",
     "location": "Mymensingh, Mymensingh Division, Bangladesh",
     "day": "Saturday",

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Weather Access</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="auth-page" data-auth-page="login">
+    <div class="rain" aria-hidden="true"></div>
+
+    <main class="auth-shell auth-shell-single">
+        <section class="auth-panel auth-panel-premium container" data-reveal>
+            <div class="auth-panel-glow auth-panel-glow-a"></div>
+            <div class="auth-panel-glow auth-panel-glow-b"></div>
+
+            <p class="eyebrow">Weather access</p>
+            <h1 class="auth-heading">Welcome back</h1>
+            <p class="auth-subtitle">Login to open your saved weather archive, dashboard, and map tools.</p>
+
+            <p id="authStatus" class="status-text auth-status">Use your account to access saved weather records.</p>
+
+            <form id="loginForm" class="auth-form auth-form-premium">
+                <label>
+                    <span>Email</span>
+                    <input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" required>
+                </label>
+                <label>
+                    <span>Password</span>
+                    <input id="loginPassword" type="password" placeholder="Enter your password" autocomplete="current-password" required>
+                </label>
+                <button id="loginSubmitBtn" type="submit" class="auth-primary-button">Login to Dashboard</button>
+            </form>
+
+            <div class="auth-switch-row">
+                <span>New here?</span>
+                <a href="signup.html" class="auth-inline-link">Create an account</a>
+            </div>
+        </section>
+    </main>
+
+    <script src="ui.js"></script>
+    <script src="local-data.js"></script>
+    <script src="auth.js"></script>
+</body>
+</html>

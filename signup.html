@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up | Weather Access</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="auth-page" data-auth-page="signup">
+    <div class="rain" aria-hidden="true"></div>
+
+    <main class="auth-shell auth-shell-single">
+        <section class="auth-panel auth-panel-premium container" data-reveal>
+            <div class="auth-panel-glow auth-panel-glow-a"></div>
+            <div class="auth-panel-glow auth-panel-glow-b"></div>
+
+            <p class="eyebrow">Weather access</p>
+            <h1 class="auth-heading">Create your account</h1>
+            <p class="auth-subtitle">Sign up once and keep your own weather records saved under your account.</p>
+
+            <p id="authStatus" class="status-text auth-status">Create a new account to keep your own record archive.</p>
+
+            <form id="signupForm" class="auth-form auth-form-premium">
+                <label>
+                    <span>Full name</span>
+                    <input id="signupName" type="text" placeholder="Your name" autocomplete="name" required>
+                </label>
+                <label>
+                    <span>Email</span>
+                    <input id="signupEmail" type="email" placeholder="you@example.com" autocomplete="email" required>
+                </label>
+                <label>
+                    <span>Password</span>
+                    <input id="signupPassword" type="password" placeholder="At least 6 characters" autocomplete="new-password" required>
+                </label>
+                <button id="signupSubmitBtn" type="submit" class="auth-primary-button">Create Account</button>
+            </form>
+
+            <div class="auth-switch-row">
+                <span>Already have an account?</span>
+                <a href="login.html" class="auth-inline-link">Go to login</a>
+            </div>
+        </section>
+    </main>
+
+    <script src="ui.js"></script>
+    <script src="local-data.js"></script>
+    <script src="auth.js"></script>
+</body>
+</html>

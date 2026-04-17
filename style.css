@@ -901,6 +901,192 @@ nav::after {
     text-decoration: none;
 }
 
+.nav-button {
+    cursor: pointer;
+    font: inherit;
+    width: auto;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.auth-user-pill {
+    white-space: nowrap;
+}
+
+.auth-page {
+    display: grid;
+    place-items: center;
+    padding-inline: 24px;
+}
+
+.auth-shell {
+    width: min(560px, 100%);
+    display: block;
+    position: relative;
+    z-index: 2;
+}
+
+.auth-panel {
+    min-height: 540px;
+}
+
+.auth-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 16px;
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-panel-premium {
+    background:
+        linear-gradient(180deg, rgba(8, 24, 46, 0.88), rgba(6, 19, 37, 0.78));
+    border-color: rgba(123, 226, 255, 0.12);
+    box-shadow:
+        0 30px 70px rgba(0, 0, 0, 0.32),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.auth-panel-glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(18px);
+    pointer-events: none;
+}
+
+.auth-panel-glow-a {
+    width: 180px;
+    height: 180px;
+    right: -40px;
+    top: -30px;
+    background: radial-gradient(circle, rgba(78, 212, 255, 0.22), transparent 68%);
+}
+
+.auth-panel-glow-b {
+    width: 220px;
+    height: 220px;
+    left: -70px;
+    bottom: -80px;
+    background: radial-gradient(circle, rgba(20, 118, 210, 0.2), transparent 70%);
+}
+
+.auth-heading {
+    font-size: clamp(2.2rem, 4.6vw, 3.45rem);
+    line-height: 1.02;
+    letter-spacing: -0.04em;
+}
+
+.auth-subtitle {
+    color: rgba(248, 251, 255, 0.78);
+    line-height: 1.7;
+    max-width: 40ch;
+    margin-top: -2px;
+}
+
+.auth-status {
+    min-height: 26px;
+}
+
+.auth-status.is-error {
+    color: #ffb0b0;
+}
+
+.auth-status.is-success {
+    color: #8ff0b8;
+}
+
+.auth-form {
+    display: grid;
+    gap: 14px;
+}
+
+.auth-form label {
+    display: grid;
+    gap: 8px;
+    color: rgba(248, 251, 255, 0.9);
+}
+
+.auth-form span {
+    font-size: 0.92rem;
+    color: rgba(248, 251, 255, 0.76);
+}
+
+.auth-form-premium input {
+    width: 100%;
+    transition:
+        transform 180ms ease,
+        border-color 180ms ease,
+        box-shadow 180ms ease,
+        background 180ms ease;
+}
+
+.auth-form-premium input:hover {
+    transform: translateY(-1px);
+    border-color: rgba(105, 208, 255, 0.26);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.auth-form-premium input:focus {
+    border-color: rgba(111, 221, 255, 0.38);
+    box-shadow:
+        0 0 0 4px rgba(30, 143, 221, 0.16),
+        0 16px 30px rgba(7, 58, 106, 0.18);
+    background: rgba(255, 255, 255, 0.09);
+}
+
+.auth-primary-button {
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-primary-button::before {
+    content: "";
+    position: absolute;
+    inset: 1px;
+    border-radius: inherit;
+    background: linear-gradient(120deg, transparent 20%, rgba(255, 255, 255, 0.28) 50%, transparent 80%);
+    transform: translateX(-140%);
+    transition: transform 0.55s ease;
+}
+
+.auth-primary-button:hover {
+    transform: translateY(-3px) scale(1.01);
+    box-shadow:
+        0 18px 34px rgba(17, 119, 198, 0.34),
+        0 0 0 1px rgba(126, 228, 255, 0.16);
+}
+
+.auth-primary-button:hover::before {
+    transform: translateX(140%);
+}
+
+.auth-switch-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    color: rgba(248, 251, 255, 0.66);
+    padding-top: 8px;
+}
+
+.auth-inline-link {
+    color: #8fe6ff;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 180ms ease, text-shadow 180ms ease, transform 180ms ease;
+}
+
+.auth-inline-link:hover {
+    color: #dff9ff;
+    text-shadow: 0 0 18px rgba(132, 229, 255, 0.38);
+}
+
+@media (max-width: 900px) {
+    .auth-panel {
+        min-height: auto;
+    }
+}
+
 .site-footer-links a:hover {
     color: #ffffff;
 }
@@ -4119,6 +4305,10 @@ nav{
 
 /* EXTRA SMALL DEVICE */
 @media (max-width:480px){
+
+.auth-shell{
+    min-height:auto;
+}
 
 .hero-copy h2{
     font-size:1.45rem;

@@ -19,8 +19,10 @@
         </div>
 
         <div class="nav-right">
+            <span id="authUserName" class="records-pill auth-user-pill">Signed in</span>
             <a href="map.html?location=Dhaka" class="nav-link">Map</a>
             <a href="records.html" class="nav-link">Records</a>
+            <button id="authLogoutBtn" type="button" class="nav-link nav-button">Logout</button>
             <a href="team.html" class="team-icon">
                 <img src="images/Untitled.png" alt="Team">
                 <span class="tooltip">Meet Our Team</span>
@@ -139,10 +141,16 @@
                     <div class="weather-news-header">
                         <div>
                             <p class="eyebrow">Weather TV channel</p>
-                            <h3 id="weatherNewsTitle">WeatherNation Live TV</h3>
+                            <h3 id="weatherNewsTitle">WeatherNation YouTube</h3>
                         </div>
                         <div class="weather-news-links">
-                            <a id="weatherNewsLink" class="records-pill weather-news-link"<iframe width="560" height="315" src="https://www.youtube.com/embed/wt6SIE7BXS8?si=IJfW5brFZslh5qsz" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>>Open WeatherNation</a>
+                            <a
+                                id="weatherNewsLink"
+                                class="records-pill weather-news-link"
+                                href="https://www.youtube.com/watch?v=3kxCeMKu-YQ"
+                                target="_blank"
+                                rel="noreferrer"
+                            >Open on YouTube</a>
                         </div>
                     </div>
 
@@ -151,23 +159,18 @@
                             id="weatherChannelSwitchBtn"
                             type="button"
                             class="weather-news-tab active"
-                        >Switch Channel: WeatherNation Live</button>
+                        >Switch YouTube Channel</button>
                     </div>
 
                     <div class="weather-news-player">
                         <iframe
                             id="weatherNewsFrame"
-                            src="https://www.youtube-nocookie.com/embed/3kxCeMKu-YQ?rel=0"
+                            src="https://www.youtube-nocookie.com/embed/3kxCeMKu-YQ?autoplay=1&mute=1&rel=0&playsinline=1"
                             title="Weather TV channel"
                             loading="lazy"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                             allowfullscreen
                         ></iframe>
-                        <div id="weatherNewsFallback" class="weather-news-fallback" hidden>
-                            <strong id="weatherNewsFallbackTitle">FOX Weather Live</strong>
-                            <p>This channel opens best in a separate tab because the provider blocks direct embed playback.</p>
-                            <a id="weatherNewsFallbackLink" class="records-pill weather-news-link" href="https://www.foxweather.com/live" target="_blank" rel="noreferrer">Open Channel</a>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -342,7 +345,7 @@
     <div id="loader" class="loader" aria-hidden="true"></div>
 
     <script src="ui.js"></script>
+    <script src="local-data.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
-

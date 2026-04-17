@@ -18,7 +18,9 @@ const liveWeatherMapLink = document.getElementById("liveWeatherMapLink");
 const weatherNewsFrame = document.getElementById("weatherNewsFrame");
 const weatherNewsLink = document.getElementById("weatherNewsLink");
 const weatherNewsTitle = document.getElementById("weatherNewsTitle");
-const weatherNewsTabs = document.querySelectorAll(".weather-news-tab");
+const weatherChannelSwitchBtn = document.getElementById("weatherChannelSwitchBtn");
+const authUserName = document.getElementById("authUserName");
+const authLogoutBtn = document.getElementById("authLogoutBtn");
 const successBox = document.getElementById("successBox");
 const successTitle = document.getElementById("successTitle");
 const successMessage = document.getElementById("successMessage");
@@ -89,8 +91,57 @@ let radarPlaying = false;
 let radarRefreshId = null;
 let activeWeatherOverlay = "radar";
 let mapZoomLevel = 6;
+const weatherTvChannels = [
+    {
+        title: "WeatherNation YouTube",
+        buttonLabel: "Switch YouTube Channel: WeatherNation",
+        linkLabel: "Open on YouTube",
+        link: "https://www.youtube.com/watch?v=3kxCeMKu-YQ",
+        src: "https://www.youtube-nocookie.com/embed/3kxCeMKu-YQ?autoplay=1&mute=1&rel=0&playsinline=1"
+    },
+    {
+        title: "FOX Weather YouTube",
+        buttonLabel: "Switch YouTube Channel: FOX Weather",
+        linkLabel: "Open on YouTube",
+        link: "https://www.youtube.com/watch?v=T3oYDzm_ff0",
+        src: "https://www.youtube-nocookie.com/embed/T3oYDzm_ff0?autoplay=1&mute=1&rel=0&playsinline=1"
+    },
+    {
+        title: "LiveNOW Weather YouTube",
+        buttonLabel: "Switch YouTube Channel: LiveNOW",
+        linkLabel: "Open on YouTube",
+        link: "https://www.youtube.com/watch?v=lAKL0H2P6bU",
+        src: "https://www.youtube-nocookie.com/embed/lAKL0H2P6bU?autoplay=1&mute=1&rel=0&playsinline=1"
+    },
+    {
+        title: "Storm Center YouTube",
+        buttonLabel: "Switch YouTube Channel: Storm Center",
+        linkLabel: "Open on YouTube",
+        link: "https://www.youtube.com/watch?v=wt6SIE7BXS8",
+        src: "https://www.youtube-nocookie.com/embed/wt6SIE7BXS8?autoplay=1&mute=1&rel=0&playsinline=1"
+    },
+    {
+        title: "Weather Updates YouTube",
+        buttonLabel: "Switch YouTube Channel: Weather Updates",
+        linkLabel: "Open on YouTube",
+        link: "https://www.youtube.com/watch?v=XWEvqy0e9-0",
+        src: "https://www.youtube-nocookie.com/embed/XWEvqy0e9-0?autoplay=1&mute=1&rel=0&playsinline=1"
+    },
+    {
+        title: "Flood Safety YouTube",
+        buttonLabel: "Switch YouTube Channel: Flood Safety",
+        linkLabel: "Open on YouTube",
+        link: "https://www.youtube.com/watch?v=RUf3ErtEbG4",
+        src: "https://www.youtube-nocookie.com/embed/RUf3ErtEbG4?autoplay=1&mute=1&rel=0&playsinline=1"
+    }
+];
+let activeWeatherTvIndex = 0;
 
 function getApiBase() {
+    if (window.location.protocol === "file:") {
+        return "http://localhost:3000";
+    }
+
     const isLocalHost = ["localhost", "127.0.0.1"].includes(window.location.hostname);
 
     if (isLocalHost && window.location.port && window.location.port !== "3000") {
@@ -101,25 +152,87 @@ function getApiBase() {
 }
 
 async function fetchJson(url, options) {
-    const response = await fetch(url, options);
-    const contentType = response.headers.get("content-type") || "";
-    const rawText = await response.text();
-
-    if (!contentType.includes("application/json")) {
-        if (rawText.trim().startsWith("<!DOCTYPE") || rawText.trim().startsWith("<html")) {
-            throw new Error("Live weather API was not found. Start the Node server and open http://localhost:3000.");
+    const tryLocalFallback = async () => {
+        if (!window.weatherLocalApi?.request) {
+            return null;
         }
 
-        throw new Error("Server returned an unexpected response.");
+        return window.weatherLocalApi.request(url, options);
+    };
+
+    try {
+        const response = await fetch(url, {
+            credentials: "include",
+            ...options
+        });
+        const contentType = response.headers.get("content-type") || "";
+        const rawText = await response.text();
+
+        if (!contentType.includes("application/json")) {
+            const fallbackPayload = await tryLocalFallback();
+
+            if (fallbackPayload !== null) {
+                return fallbackPayload;
+            }
+
+            if (rawText.trim().startsWith("<!DOCTYPE") || rawText.trim().startsWith("<html")) {
+                throw new Error("Live weather API was not found. Start the Node server and open http://localhost:3000.");
+            }
+
+            throw new Error("Server returned an unexpected response.");
+        }
+
+        const payload = JSON.parse(rawText);
+
+        if (!response.ok) {
+            throw new Error(payload.error || "Request failed.");
+        }
+
+        return payload;
+    } catch (error) {
+        const fallbackPayload = await tryLocalFallback();
+
+        if (fallbackPayload !== null) {
+            return fallbackPayload;
+        }
+
+        throw error;
+    }
+}
+
+function updateAuthShell(user) {
+    if (authUserName) {
+        authUserName.textContent = user?.name ? `Hi, ${user.name}` : "Signed in";
+    }
+}
+
+async function ensureAuthenticatedPage() {
+    try {
+        const session = await fetchJson(`${getApiBase()}/api/auth/me`);
+
+        if (!session.authenticated || !session.user) {
+            window.location.href = "login.html";
+            return false;
+        }
+
+        updateAuthShell(session.user);
+        return true;
+    } catch (error) {
+        window.location.href = "login.html";
+        return false;
+    }
+}
+
+async function logoutSession() {
+    try {
+        await fetchJson(`${getApiBase()}/api/auth/logout`, {
+            method: "POST"
+        });
+    } catch (error) {
+        // Redirect anyway so the user is not stuck on a broken session.
     }
 
-    const payload = JSON.parse(rawText);
-
-    if (!response.ok) {
-        throw new Error(payload.error || "Request failed.");
-    }
-
-    return payload;
+    window.location.href = "login.html";
 }
 
 async function fetchTextJson(url, options) {
@@ -260,21 +373,27 @@ function formatMapTimeline(timestamp = Date.now()) {
     return `${day} ${time}`;
 }
 
-function setWeatherChannelSource(channelSrc, channelLink, title) {
-    if (!channelSrc || !weatherNewsFrame) {
+function applyWeatherTvChannel(channel) {
+    if (!channel || !weatherNewsFrame) {
         return;
     }
 
-    weatherNewsFrame.src = channelSrc;
-    weatherNewsFrame.title = title || "Weather TV channel";
-
-    if (weatherNewsLink && channelLink) {
-        weatherNewsLink.href = channelLink;
+    if (weatherNewsTitle) {
+        weatherNewsTitle.textContent = channel.title || "Weather TV channel";
     }
 
-    if (weatherNewsTitle && title) {
-        weatherNewsTitle.textContent = title;
+    if (weatherNewsLink) {
+        weatherNewsLink.href = channel.link || "#";
+        weatherNewsLink.textContent = channel.linkLabel || "Open Channel";
     }
+
+    if (weatherChannelSwitchBtn) {
+        weatherChannelSwitchBtn.textContent = channel.buttonLabel || "Switch Channel";
+    }
+
+    weatherNewsFrame.hidden = false;
+    weatherNewsFrame.src = channel.src || "";
+    weatherNewsFrame.title = channel.title || "Weather TV channel";
 }
 
 function updateRadarPlaybackButton() {
@@ -1472,17 +1591,14 @@ dashboardChips.forEach((chip) => {
     });
 });
 
-weatherNewsTabs.forEach((tab) => {
-    tab.addEventListener("click", () => {
-        const channelSrc = tab.dataset.channelSrc || "";
-        const channelLink = tab.dataset.channelLink || "";
-        const title = tab.dataset.channelTitle || "Weather TV channel";
+if (weatherChannelSwitchBtn) {
+    applyWeatherTvChannel(weatherTvChannels[activeWeatherTvIndex]);
 
-        weatherNewsTabs.forEach((item) => item.classList.remove("active"));
-        tab.classList.add("active");
-        setWeatherChannelSource(channelSrc, channelLink, title);
+    weatherChannelSwitchBtn.addEventListener("click", () => {
+        activeWeatherTvIndex = (activeWeatherTvIndex + 1) % weatherTvChannels.length;
+        applyWeatherTvChannel(weatherTvChannels[activeWeatherTvIndex]);
     });
-});
+}
 
 if (fullscreenMapBtn && weatherMapShell) {
     fullscreenMapBtn.addEventListener("click", async () => {
@@ -1534,23 +1650,37 @@ if (voiceToggleBtn) {
     });
 }
 
+if (authLogoutBtn) {
+    authLogoutBtn.addEventListener("click", logoutSession);
+}
+
 document.addEventListener("mousemove", (event) => {
     const x = event.clientX / window.innerWidth;
     const y = event.clientY / window.innerHeight;
     document.body.style.backgroundPosition = `${50 + x * 4}% ${50 + y * 4}%`;
 });
 
-dateInput.value = formatDateForInput();
-locationField.value = locationInput.value.trim();
-dayField.value = formatDayName();
-setInterval(controlRain, 3000);
-controlRain();
-autoLightning();
-ensureWeatherMap();
-updateFullscreenButton();
-setPredictionFallback();
-setTrendFallback();
-setComparisonFallback();
-setOverviewFallback();
-loadLiveWeather();
+async function initializeDashboard() {
+    const isAuthenticated = await ensureAuthenticatedPage();
+
+    if (!isAuthenticated) {
+        return;
+    }
+
+    dateInput.value = formatDateForInput();
+    locationField.value = locationInput.value.trim();
+    dayField.value = formatDayName();
+    setInterval(controlRain, 3000);
+    controlRain();
+    autoLightning();
+    ensureWeatherMap();
+    updateFullscreenButton();
+    setPredictionFallback();
+    setTrendFallback();
+    setComparisonFallback();
+    setOverviewFallback();
+    loadLiveWeather();
+}
+
+initializeDashboard();
 
