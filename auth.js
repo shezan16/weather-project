@@ -54,6 +54,14 @@ async function fetchJson(url, options) {
 
         const payload = JSON.parse(rawText);
 
+        if (new URL(url, window.location.href).pathname === "/api/auth/me" && window.weatherLocalApi?.request) {
+            const localSession = await window.weatherLocalApi.request(url, options);
+
+            if (localSession?.authenticated) {
+                return localSession;
+            }
+        }
+
         if (!response.ok) {
             throw new Error(payload.error || "Request failed.");
         }

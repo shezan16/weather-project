@@ -9,6 +9,7 @@ const recordsLatest = document.getElementById("recordsLatest");
 const recordsLatestMeta = document.getElementById("recordsLatestMeta");
 const recordFilterInput = document.getElementById("recordFilterInput");
 const clearFilterBtn = document.getElementById("clearFilterBtn");
+const backToDashboardBtn = document.getElementById("backToDashboardBtn");
 const authUserName = document.getElementById("authUserName");
 const authLogoutBtn = document.getElementById("authLogoutBtn");
 let allRecords = [];
@@ -55,6 +56,14 @@ async function fetchJson(url, options) {
         }
 
         const payload = JSON.parse(rawText);
+
+        if (new URL(url, window.location.href).pathname === "/api/auth/me" && window.weatherLocalApi?.request) {
+            const localSession = await window.weatherLocalApi.request(url, options);
+
+            if (localSession?.authenticated) {
+                return localSession;
+            }
+        }
 
         if (!response.ok) {
             throw new Error(payload.error || "Request failed.");
@@ -257,10 +266,6 @@ async function deleteRecord(recordId) {
     }
 }
 
-function goBack() {
-    window.location.href = "index.html";
-}
-
 recordFilterInput?.addEventListener("input", applyFilter);
 clearFilterBtn?.addEventListener("click", () => {
     if (recordFilterInput) {
@@ -271,6 +276,9 @@ clearFilterBtn?.addEventListener("click", () => {
 });
 
 authLogoutBtn?.addEventListener("click", logoutSession);
+backToDashboardBtn?.addEventListener("click", () => {
+    window.location.href = "index.html";
+});
 
 async function initializeRecordsPage() {
     const isAuthenticated = await ensureAuthenticatedPage();

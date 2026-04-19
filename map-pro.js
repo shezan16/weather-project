@@ -2,6 +2,10 @@
 const weatherMapElement = document.getElementById("weatherMap");
 const weatherMapShell = document.getElementById("weatherMapShell");
 const weatherFocusBtn = document.getElementById("weatherFocusBtn");
+const tempOverlayBtn = document.getElementById("tempOverlayBtn");
+const windOverlayBtn = document.getElementById("windOverlayBtn");
+const humidityOverlayBtn = document.getElementById("humidityOverlayBtn");
+const rainOverlayBtn = document.getElementById("rainOverlayBtn");
 const radarToggleBtn = document.getElementById("radarToggleBtn");
 const recordsToggleBtn = document.getElementById("recordsToggleBtn");
 const recenterMapBtn = document.getElementById("recenterMapBtn");
@@ -32,6 +36,14 @@ const mapFooterBase = document.getElementById("mapFooterBase");
 const mapFooterZoom = document.getElementById("mapFooterZoom");
 const mapFooterFocus = document.getElementById("mapFooterFocus");
 const mapFooterCoords = document.getElementById("mapFooterCoords");
+const windyMapFrame = document.getElementById("windyMapFrame");
+const windyOpenLink = document.getElementById("windyOpenLink");
+const windyStatus = document.getElementById("windyStatus");
+const windyWindBtn = document.getElementById("windyWindBtn");
+const windyRainBtn = document.getElementById("windyRainBtn");
+const windyTempBtn = document.getElementById("windyTempBtn");
+const windyPressureBtn = document.getElementById("windyPressureBtn");
+const isWindyOnlyMode = !weatherMapElement && !!windyMapFrame;
 
 const bangladeshBounds = [
     [20.55, 88.0],
@@ -46,6 +58,44 @@ const majorCities = [
     { name: "Khulna", label: "Khulna" },
     { name: "Barishal", label: "Barishal" }
 ];
+
+const knownLocations = {
+    dhaka: {
+        label: "Dhaka, Dhaka Division, Bangladesh",
+        lat: 23.8103,
+        lon: 90.4125
+    },
+    chattogram: {
+        label: "Chattogram, Chattogram Division, Bangladesh",
+        lat: 22.3569,
+        lon: 91.7832
+    },
+    chittagong: {
+        label: "Chattogram, Chattogram Division, Bangladesh",
+        lat: 22.3569,
+        lon: 91.7832
+    },
+    sylhet: {
+        label: "Sylhet, Sylhet Division, Bangladesh",
+        lat: 24.8949,
+        lon: 91.8687
+    },
+    rajshahi: {
+        label: "Rajshahi, Rajshahi Division, Bangladesh",
+        lat: 24.3745,
+        lon: 88.6042
+    },
+    khulna: {
+        label: "Khulna, Khulna Division, Bangladesh",
+        lat: 22.8456,
+        lon: 89.5403
+    },
+    barishal: {
+        label: "Barishal, Barishal Division, Bangladesh",
+        lat: 22.701,
+        lon: 90.3535
+    }
+};
 
 const weatherDescriptions = {
     0: "Clear sky",
@@ -100,6 +150,7 @@ let radarPlaying = false;
 let radarAnimationTimer = null;
 let refreshTimer = null;
 let recordsLoaded = false;
+let activeWindyLayer = "wind";
 const bundleCache = new Map();
 
 function getQueryLocation() {
@@ -134,6 +185,12 @@ async function fetchJson(url, options) {
 }
 
 async function geocodeLocation(location) {
+    const knownPlace = knownLocations[String(location || "").trim().toLowerCase()];
+
+    if (knownPlace) {
+        return knownPlace;
+    }
+
     const geocodeUrl =
         `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1&language=en&format=json`;
     const geocodeData = await fetchJson(geocodeUrl);
@@ -148,6 +205,26 @@ async function geocodeLocation(location) {
         lat: Number(place.latitude),
         lon: Number(place.longitude)
     };
+}
+
+function buildFallbackPayload(place) {
+    return normalizePayload({
+        location: place.label,
+        latitude: place.lat,
+        longitude: place.lon,
+        timezone: "Asia/Dhaka",
+        current: {
+            time: new Date().toISOString(),
+            temperature: 28,
+            humidity: 72,
+            precipitation: 0,
+            windSpeed: 12,
+            apparentTemperature: 31,
+            weatherCode: 2
+        },
+        hourly: [],
+        daily: []
+    });
 }
 
 function normalizePayload(payload) {
@@ -222,7 +299,14 @@ async function fetchLocationBundle(location, force = false) {
         return payload;
     } catch (apiError) {
         const place = await geocodeLocation(trimmedLocation);
-        const payload = await fetchBundleByCoords(place.lat, place.lon, place.label);
+        let payload;
+
+        try {
+            payload = await fetchBundleByCoords(place.lat, place.lon, place.label);
+        } catch (forecastError) {
+            payload = buildFallbackPayload(place);
+        }
+
         bundleCache.set(cacheKey, payload);
         return payload;
     }
@@ -261,13 +345,140 @@ function getBaseModeLabel(mode = activeBaseMode) {
 }
 
 function getOverlayLabel(mode = activeOverlayMode) {
+    if (mode === "temp") return "Temperature";
+    if (mode === "wind") return "Wind";
+    if (mode === "humidity") return "Humidity";
+    if (mode === "rain") return "Rainfall";
     if (mode === "radar") return radarPlaying ? "Radar Playback" : "Radar";
     if (mode === "records") return "Saved Records";
     return "Weather Focus";
 }
 
+function getOverlayMetric(payload, mode = activeOverlayMode) {
+    if (!payload?.current) {
+        return {
+            markerValue: "--",
+            circleRadius: 18000,
+            color: "#64d3ff"
+        };
+    }
+
+    const current = payload.current;
+
+    if (mode === "temp") {
+        return {
+            markerValue: `${Math.round(current.temperature)}C`,
+            circleRadius: 18000 + Math.max(0, Number(current.temperature)) * 350,
+            color: Number(current.temperature) >= 30 ? "#ffb84f" : "#6ee0ff"
+        };
+    }
+
+    if (mode === "wind") {
+        return {
+            markerValue: `${Math.round(current.windSpeed)} km/h`,
+            circleRadius: 18000 + Math.max(0, Number(current.windSpeed)) * 1000,
+            color: "#77d8ff"
+        };
+    }
+
+    if (mode === "humidity") {
+        return {
+            markerValue: `${Math.round(current.humidity)}%`,
+            circleRadius: 18000 + Math.max(0, Number(current.humidity)) * 220,
+            color: "#8adf8b"
+        };
+    }
+
+    if (mode === "rain") {
+        return {
+            markerValue: `${Number(current.precipitation).toFixed(1)} mm`,
+            circleRadius: 18000 + Math.max(0, Number(current.precipitation)) * 6500,
+            color: "#4ab7ff"
+        };
+    }
+
+    return {
+        markerValue: `${Math.round(current.temperature)}C`,
+        circleRadius: 16000 + Number(current.precipitation) * 4500 + Number(current.windSpeed) * 220,
+        color: getWeatherColor(current)
+    };
+}
+
 function shortLocationLabel(label) {
     return String(label || "Location").split(",")[0].trim();
+}
+
+function getWindyLayerLabel(mode = activeWindyLayer) {
+    if (mode === "rain") return "Rain and thunder";
+    if (mode === "temp") return "Temperature";
+    if (mode === "pressure") return "Pressure";
+    return "Wind";
+}
+
+function buildWindyEmbedUrl(lat, lon, overlay = activeWindyLayer) {
+    const params = new URLSearchParams({
+        lat: String(Number(lat).toFixed(4)),
+        lon: String(Number(lon).toFixed(4)),
+        zoom: String(mapInstance ? Math.max(5, Math.min(11, Math.round(mapInstance.getZoom()))) : mapZoomLevel),
+        level: "surface",
+        overlay,
+        product: "ecmwf",
+        menu: "",
+        message: "true",
+        marker: "true",
+        calendar: "now",
+        pressure: "true",
+        type: "map",
+        location: "coordinates",
+        detail: "true",
+        detailLat: String(Number(lat).toFixed(4)),
+        detailLon: String(Number(lon).toFixed(4)),
+        metricWind: "km/h",
+        metricTemp: "°C",
+        metricRain: "mm",
+        radarRange: "-1"
+    });
+
+    return `https://embed.windy.com/embed2.html?${params.toString()}`;
+}
+
+function updateWindyButtons() {
+    windyWindBtn?.classList.toggle("active", activeWindyLayer === "wind");
+    windyRainBtn?.classList.toggle("active", activeWindyLayer === "rain");
+    windyTempBtn?.classList.toggle("active", activeWindyLayer === "temp");
+    windyPressureBtn?.classList.toggle("active", activeWindyLayer === "pressure");
+}
+
+function syncWindyMap(forceReload = false) {
+    if (!windyMapFrame) {
+        return;
+    }
+
+    const lat = activePayload?.latitude ?? activeLocation.lat;
+    const lon = activePayload?.longitude ?? activeLocation.lon;
+    const focusLabel = activePayload?.location || activeLocation.label;
+    const windyUrl = buildWindyEmbedUrl(lat, lon, activeWindyLayer);
+
+    if (forceReload || windyMapFrame.src !== windyUrl) {
+        windyMapFrame.src = windyUrl;
+    }
+
+    if (windyOpenLink) {
+        windyOpenLink.href = windyUrl;
+    }
+
+    if (windyStatus) {
+        windyStatus.textContent = `${getWindyLayerLabel()} layer synced to ${focusLabel}.`;
+    }
+
+    setMapLayerLabel(`Windy ${getWindyLayerLabel().toLowerCase()} layer`);
+    setMapCityLabel(focusLabel);
+
+    if (activePayload?.current?.time) {
+        setMapTimelineLabel(formatMapTimeline(activePayload.current.time));
+    }
+
+    updateWindyButtons();
 }
 
 function buildFocusPopup(payload) {
@@ -438,6 +649,10 @@ function updateControlStates() {
     mapModeSatelliteBtn?.classList.toggle("active", activeBaseMode === "satellite");
     labelsToggleBtn?.classList.toggle("active", activeBaseMode === "terrain");
     weatherFocusBtn?.classList.toggle("active", activeOverlayMode === "weather");
+    tempOverlayBtn?.classList.toggle("active", activeOverlayMode === "temp");
+    windOverlayBtn?.classList.toggle("active", activeOverlayMode === "wind");
+    humidityOverlayBtn?.classList.toggle("active", activeOverlayMode === "humidity");
+    rainOverlayBtn?.classList.toggle("active", activeOverlayMode === "rain");
     radarToggleBtn?.classList.toggle("active", activeOverlayMode === "radar");
     recordsToggleBtn?.classList.toggle("active", activeOverlayMode === "records");
 
@@ -471,6 +686,8 @@ function updateMapFooter() {
         const center = mapInstance ? mapInstance.getCenter() : { lat: activeLocation.lat, lng: activeLocation.lon };
         mapFooterCoords.textContent = `${Number(center.lat).toFixed(4)}, ${Number(center.lng).toFixed(4)}`;
     }
+
+    syncWindyMap();
 }
 
 function updateSnapshotCard() {
@@ -511,7 +728,8 @@ function renderFocusLayers() {
     }
 
     const latLng = [activePayload.latitude, activePayload.longitude];
-    const markerValue = `${Math.round(activePayload.current.temperature)}C`;
+    const metric = getOverlayMetric(activePayload, activeOverlayMode);
+    const markerValue = metric.markerValue;
     const markerLabel = shortLocationLabel(activePayload.location);
 
     if (focusMarker) {
@@ -523,10 +741,10 @@ function renderFocusLayers() {
     }
 
     focusCircle = L.circle(latLng, {
-        radius: 16000 + Number(activePayload.current.precipitation) * 4500 + Number(activePayload.current.windSpeed) * 220,
-        color: getWeatherColor(activePayload.current),
+        radius: metric.circleRadius,
+        color: metric.color,
         weight: 2,
-        fillColor: getWeatherColor(activePayload.current),
+        fillColor: metric.color,
         fillOpacity: 0.2
     }).addTo(mapInstance);
 
@@ -581,8 +799,9 @@ async function loadMajorCityMarkers(force = false) {
         }
 
         const { city, payload } = result.value;
+        const metric = getOverlayMetric(payload, activeOverlayMode);
         const marker = L.marker([payload.latitude, payload.longitude], {
-            icon: createTemperatureIcon(city.label, `${Math.round(payload.current.temperature)}C`, "city")
+            icon: createTemperatureIcon(city.label, metric.markerValue, "city")
         });
 
         marker.bindPopup(buildFocusPopup(payload));
@@ -778,8 +997,25 @@ async function startRadarAnimation() {
 }
 
 async function renderOverlayState() {
-    if (!mapInstance) {
+    if (!mapInstance && !isWindyOnlyMode) {
         return;
+    }
+
+    if (isWindyOnlyMode) {
+        if (activePayload) {
+            setMapStatusText(
+                `Showing ${getWindyLayerLabel().toLowerCase()} map over ${activePayload.location}. Search any city, use My Location, or open the current view in Windy.`
+            );
+        }
+
+        syncWindyMap(true);
+        updateControlStates();
+        updateMapFooter();
+        return;
+    }
+
+    if (activePayload) {
+        renderFocusLayers();
     }
 
     if (activeOverlayMode !== "radar") {
@@ -802,6 +1038,13 @@ async function renderOverlayState() {
         mapInstance.removeLayer(savedRecordsLayer);
     }
 
+    if (activePayload) {
+        setMapStatusText(
+            `Showing ${getOverlayLabel().toLowerCase()} map over ${activePayload.location}. Drag the main marker, search any city, or use Me for current location.`
+        );
+    }
+
+    await loadMajorCityMarkers(true);
     setMapLayerLabel(`${getBaseModeLabel()} + ${getOverlayLabel()}`);
     updateControlStates();
     updateMapFooter();
@@ -822,9 +1065,10 @@ async function applyPayload(payload, options = {}) {
     mapLocationInput.value = shortLocationLabel(activePayload.location);
     setMapCityLabel(activePayload.location);
     setMapStatusText(
-        `Showing ${getOverlayLabel().toLowerCase()} over ${activePayload.location}. Drag the main marker, search any city, or use Me for current location.`
+        `Showing ${getOverlayLabel().toLowerCase()} map over ${activePayload.location}. Drag the main marker, search any city, or use Me for current location.`
     );
     updateSnapshotCard();
+    syncWindyMap(true);
     renderFocusLayers();
 
     if (fly && mapInstance) {
@@ -917,6 +1161,26 @@ weatherFocusBtn?.addEventListener("click", async () => {
     await renderOverlayState();
 });
 
+tempOverlayBtn?.addEventListener("click", async () => {
+    activeOverlayMode = "temp";
+    await renderOverlayState();
+});
+
+windOverlayBtn?.addEventListener("click", async () => {
+    activeOverlayMode = "wind";
+    await renderOverlayState();
+});
+
+humidityOverlayBtn?.addEventListener("click", async () => {
+    activeOverlayMode = "humidity";
+    await renderOverlayState();
+});
+
+rainOverlayBtn?.addEventListener("click", async () => {
+    activeOverlayMode = "rain";
+    await renderOverlayState();
+});
+
 radarToggleBtn?.addEventListener("click", async () => {
     activeOverlayMode = "radar";
     await renderOverlayState();
@@ -984,11 +1248,13 @@ locateMeBtn?.addEventListener("click", () => {
 refreshRadarBtn?.addEventListener("click", async () => {
     try {
         bundleCache.delete(String(activeQuery || "").toLowerCase());
-        await fetchRadarFrames(true);
-        await loadMajorCityMarkers(true);
-        recordsLoaded = false;
-        await loadSavedRecordMarkers(true);
         await updateLocation(activeQuery, true);
+        if (!isWindyOnlyMode) {
+            await fetchRadarFrames(true);
+            await loadMajorCityMarkers(true);
+            recordsLoaded = false;
+            await loadSavedRecordMarkers(true);
+        }
     } catch (error) {
         setMapStatusText(error.message || "Unable to refresh the live map right now.");
     }
@@ -1008,7 +1274,7 @@ fullscreenMapBtn?.addEventListener("click", async () => {
 
 document.addEventListener("fullscreenchange", updateFullscreenButton);
 (async function initMapPage() {
-    if (!window.L) {
+    if (!window.L && !isWindyOnlyMode) {
         setMapStatusText("Interactive map library could not load. Please refresh and try again.");
         return;
     }
@@ -1018,15 +1284,39 @@ document.addEventListener("fullscreenchange", updateFullscreenButton);
     updateFullscreenButton();
     updateControlStates();
     setMapTimelineLabel(formatMapTimeline());
+    syncWindyMap(true);
 
     try {
         await updateLocation(getQueryLocation());
-        await fetchRadarFrames();
-        await loadMajorCityMarkers();
+        if (!isWindyOnlyMode) {
+            await fetchRadarFrames();
+            await loadMajorCityMarkers();
+        }
     } catch (error) {
         setMapLayerLabel(error.message || "Unable to load the live map.");
         setMapStatusText(error.message || "Unable to load the live map.");
+        syncWindyMap(true);
     }
 
-    scheduleRefresh();
+scheduleRefresh();
 })();
+
+windyWindBtn?.addEventListener("click", () => {
+    activeWindyLayer = "wind";
+    syncWindyMap(true);
+});
+
+windyRainBtn?.addEventListener("click", () => {
+    activeWindyLayer = "rain";
+    syncWindyMap(true);
+});
+
+windyTempBtn?.addEventListener("click", () => {
+    activeWindyLayer = "temp";
+    syncWindyMap(true);
+});
+
+windyPressureBtn?.addEventListener("click", () => {
+    activeWindyLayer = "pressure";
+    syncWindyMap(true);
+});

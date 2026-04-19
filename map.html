@@ -4,12 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Live Weather Map</title>
-    <link
-        rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-        crossorigin=""
-    >
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="map-page">
@@ -55,60 +49,51 @@
                 <button type="button" class="map-chip" data-map-location="Rajshahi">Rajshahi</button>
             </div>
 
-            <div class="weather-map-actions map-page-pills">
-                <div id="mapCityPill" class="records-pill">Center: Dhaka</div>
-                <div id="mapLayerStatus" class="records-pill">Live radar map</div>
-                <div id="mapTimelinePill" class="records-pill">11 Apr 03:00</div>
-            </div>
-
-            <div class="weather-map-shell map-page-shell" id="weatherMapShell">
-                <div class="weather-map-ui map-live-hud">
-                    <div class="map-live-card">
-                        <div>
-                            <span class="map-live-label">Map status</span>
-                            <strong id="mapStatusText">Syncing live weather map...</strong>
+            <section class="windy-section">
+                <div class="windy-map-shell" id="weatherMapShell">
+                    <div class="windy-map-ui windy-map-topbar">
+                        <div class="windy-pills">
+                            <div id="mapCityPill" class="records-pill">Center: Dhaka</div>
+                            <div id="mapLayerStatus" class="records-pill">Windy wind layer</div>
+                            <div id="mapTimelinePill" class="records-pill">11 Apr 03:00</div>
                         </div>
-                        <div class="map-live-meta">
-                            <span id="mapSnapshotCondition">--</span>
-                            <span id="mapSnapshotUpdated">--</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="weather-map-ui weather-map-brand">
-                    <div class="map-brand-badge">
-                        <span class="map-brand-orb"></span>
-                        <div>
-                            <strong>WEATHER</strong>
-                            <span>FULL MAP</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="weather-map-ui weather-map-sidebar">
-                    <div class="map-sidebar-card">
-                        <div class="map-sidebar-header">
-                            <span>Base Map</span>
-                        </div>
-                        <button id="mapModeStreetBtn" type="button" class="map-layer-btn">Street</button>
-                        <button id="mapModeSatelliteBtn" type="button" class="map-layer-btn active">Satellite</button>
-                        <button id="labelsToggleBtn" type="button" class="map-layer-btn">Terrain</button>
+                        <a
+                            id="windyOpenLink"
+                            href="https://embed.windy.com/embed2.html?lat=23.8103&lon=90.4125&zoom=7&level=surface&overlay=wind&product=ecmwf&menu=&message=true&marker=true&calendar=now&pressure=true&type=map&location=coordinates&detail=true&detailLat=23.8103&detailLon=90.4125&metricWind=km%2Fh&metricTemp=C&metricRain=mm&radarRange=-1"
+                            class="records-pill windy-inline-link"
+                            target="_blank"
+                            rel="noreferrer"
+                        >Open in Windy</a>
                     </div>
 
-                    <div class="map-sidebar-card">
-                        <div class="map-sidebar-header">
-                            <span>Live Layers</span>
-                        </div>
-                        <button id="weatherFocusBtn" type="button" class="map-layer-btn active">Weather Focus</button>
-                        <button id="radarToggleBtn" type="button" class="map-layer-btn">Radar</button>
-                        <button id="recordsToggleBtn" type="button" class="map-layer-btn">Saved Records</button>
+                    <div class="windy-map-ui windy-map-side-actions">
+                        <button id="locateMeBtn" type="button" class="map-tool-btn map-tool-btn-wide">Me</button>
+                        <button id="refreshRadarBtn" type="button" class="map-tool-btn map-tool-btn-wide">Refresh</button>
+                        <button id="fullscreenMapBtn" type="button" class="map-tool-btn map-tool-btn-wide">Full</button>
                     </div>
 
-                    <div class="map-sidebar-card map-snapshot-card">
-                        <div class="map-sidebar-header">
-                            <span>Live Snapshot</span>
+                    <div class="windy-map-ui windy-map-bottom">
+                        <div class="windy-layer-tabs" aria-label="Official Windy layers">
+                            <button type="button" id="windyWindBtn" class="weather-news-tab active">Wind</button>
+                            <button type="button" id="windyRainBtn" class="weather-news-tab">Rain</button>
+                            <button type="button" id="windyTempBtn" class="weather-news-tab">Temperature</button>
+                            <button type="button" id="windyPressureBtn" class="weather-news-tab">Pressure</button>
                         </div>
-                        <div class="map-snapshot-grid">
+
+                        <div class="map-live-card">
+                            <div>
+                                <span class="map-live-label">Map status</span>
+                                <strong id="mapStatusText">Syncing live weather map...</strong>
+                            </div>
+                            <div class="map-live-meta">
+                                <span id="mapSnapshotCondition">--</span>
+                                <span id="mapSnapshotUpdated">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="windy-map-ui windy-map-snapshot">
+                        <div class="windy-mini-snapshot">
                             <article class="map-snapshot-metric">
                                 <span>Temp</span>
                                 <strong id="mapSnapshotTemp">--</strong>
@@ -123,57 +108,18 @@
                             </article>
                         </div>
                     </div>
+
+                    <iframe
+                        id="windyMapFrame"
+                        title="Official Windy weather map"
+                        loading="lazy"
+                        allowfullscreen
+                    ></iframe>
                 </div>
 
-                <div class="weather-map-ui weather-map-tools">
-                    <button id="zoomInMapBtn" type="button" class="map-tool-btn" aria-label="Zoom in">+</button>
-                    <button id="locateMeBtn" type="button" class="map-tool-btn" aria-label="Find my location">Me</button>
-                    <button id="recenterMapBtn" type="button" class="map-tool-btn" aria-label="Fit Bangladesh">BD</button>
-                    <button id="refreshRadarBtn" type="button" class="map-tool-btn" aria-label="Refresh map">R</button>
-                    <button id="zoomOutMapBtn" type="button" class="map-tool-btn" aria-label="Zoom out">-</button>
-                    <button id="fullscreenMapBtn" type="button" class="map-tool-btn map-tool-btn-wide" aria-label="Toggle fullscreen">Full</button>
-                </div>
+                <p id="windyStatus" class="status-text">Windy embed synced to your selected location.</p>
 
-                <div class="weather-map-ui weather-map-timeline">
-                    <div class="map-timeline-card">
-                        <button id="mapPlayBtn" type="button" class="map-play-btn" aria-label="Play radar animation">Play</button>
-                        <div>
-                            <span class="map-timeline-date">Live frame</span>
-                            <strong id="mapTimelineText">11 Apr 03:00</strong>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="weather-map-overlay">
-                    <span class="map-pulse pulse-one"></span>
-                    <span class="map-pulse pulse-two"></span>
-                    <span class="map-pulse pulse-three"></span>
-                </div>
-                <div id="weatherMap" class="weather-map-canvas" aria-label="Interactive weather map"></div>
-            </div>
-
-            <div class="map-footer-bar">
-                <div class="map-footer-pill">
-                    <span>Overlay</span>
-                    <strong id="mapFooterOverlay">Weather Focus</strong>
-                </div>
-                <div class="map-footer-pill">
-                    <span>Base</span>
-                    <strong id="mapFooterBase">Satellite</strong>
-                </div>
-                <div class="map-footer-pill">
-                    <span>Zoom</span>
-                    <strong id="mapFooterZoom">7</strong>
-                </div>
-                <div class="map-footer-pill map-footer-pill-wide">
-                    <span>Focus</span>
-                    <strong id="mapFooterFocus">Dhaka, Bangladesh</strong>
-                </div>
-                <div class="map-footer-pill map-footer-pill-wide">
-                    <span>Coordinates</span>
-                    <strong id="mapFooterCoords">23.8103, 90.4125</strong>
-                </div>
-            </div>
+            </section>
         </section>
     </main>
 
@@ -187,11 +133,6 @@
         <span class="footer-clock-value">--:--</span>
     </footer>
 
-    <script
-        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-        crossorigin=""
-    ></script>
     <script src="ui.js"></script>
     <script src="map-pro.js"></script>
 </body>

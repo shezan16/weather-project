@@ -85,6 +85,12 @@
                     <div>
                         <p class="eyebrow">Current weather</p>
                         <h3 id="liveLocation">Dhaka, Bangladesh</h3>
+                        <div class="live-location-meta">
+                            <span id="liveDayState" class="live-phase-badge">
+                                <span class="live-phase-icon" aria-hidden="true">☀</span>
+                                <span class="live-phase-text">--</span>
+                            </span>
+                        </div>
                     </div>
                     <div class="live-weather-header-actions">
                         <a id="liveWeatherMapLink" href="map.html?location=Dhaka" class="records-pill">Weather Map</a>
@@ -167,11 +173,12 @@
                             id="weatherNewsFrame"
                             src="https://www.youtube-nocookie.com/embed/3kxCeMKu-YQ?autoplay=1&mute=1&rel=0&playsinline=1"
                             title="Weather TV channel"
-                            loading="lazy"
+                            loading="eager"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                             allowfullscreen
                         ></iframe>
                     </div>
+
                 </div>
             </div>
         </section>
@@ -308,7 +315,7 @@
                 <input id="rainfallInput" type="number" placeholder="Rainfall (mm)" step="0.1">
 
                 <button type="submit">Add Record</button>
-                <button type="button" class="secondary-button" onclick="location.href='records.html'">Show Records</button>
+                <button type="button" id="showRecordsBtn" class="secondary-button">Show Records</button>
             </form>
 
             <div class="search-panel">

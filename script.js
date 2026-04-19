@@ -15,10 +15,12 @@ const refreshLiveWeatherBtn = document.getElementById("refreshLiveWeatherBtn");
 const useLiveWeatherBtn = document.getElementById("useLiveWeatherBtn");
 const liveStatus = document.getElementById("liveStatus");
 const liveWeatherMapLink = document.getElementById("liveWeatherMapLink");
+const liveDayState = document.getElementById("liveDayState");
 const weatherNewsFrame = document.getElementById("weatherNewsFrame");
 const weatherNewsLink = document.getElementById("weatherNewsLink");
 const weatherNewsTitle = document.getElementById("weatherNewsTitle");
 const weatherChannelSwitchBtn = document.getElementById("weatherChannelSwitchBtn");
+const showRecordsBtn = document.getElementById("showRecordsBtn");
 const authUserName = document.getElementById("authUserName");
 const authLogoutBtn = document.getElementById("authLogoutBtn");
 const successBox = document.getElementById("successBox");
@@ -91,6 +93,9 @@ let radarPlaying = false;
 let radarRefreshId = null;
 let activeWeatherOverlay = "radar";
 let mapZoomLevel = 6;
+const reducedEffects =
+    document.body.classList.contains("reduced-effects") ||
+    window.weatherUiPrefs?.reducedEffects === true;
 const weatherTvChannels = [
     {
         title: "WeatherNation YouTube",
@@ -136,6 +141,36 @@ const weatherTvChannels = [
     }
 ];
 let activeWeatherTvIndex = 0;
+let weatherTvLoaded = false;
+let weatherMapLoaded = false;
+
+function observeOnceWhenVisible(target, callback) {
+    if (!target || typeof callback !== "function") {
+        return;
+    }
+
+    if (!("IntersectionObserver" in window)) {
+        callback();
+        return;
+    }
+
+    const observer = new IntersectionObserver(
+        (entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    observer.disconnect();
+                    callback();
+                }
+            });
+        },
+        {
+            threshold: 0.18,
+            rootMargin: "160px 0px"
+        }
+    );
+
+    observer.observe(target);
+}
 
 function getApiBase() {
     if (window.location.protocol === "file:") {
@@ -183,6 +218,14 @@ async function fetchJson(url, options) {
         }
 
         const payload = JSON.parse(rawText);
+
+        if (new URL(url, window.location.href).pathname === "/api/auth/me" && window.weatherLocalApi?.request) {
+            const localSession = await window.weatherLocalApi.request(url, options);
+
+            if (localSession?.authenticated) {
+                return localSession;
+            }
+        }
 
         if (!response.ok) {
             throw new Error(payload.error || "Request failed.");
@@ -392,8 +435,22 @@ function applyWeatherTvChannel(channel) {
     }
 
     weatherNewsFrame.hidden = false;
-    weatherNewsFrame.src = channel.src || "";
+    weatherNewsFrame.loading = "eager";
+
+    if (weatherNewsFrame.src !== (channel.src || "")) {
+        weatherNewsFrame.src = channel.src || "";
+    }
+
     weatherNewsFrame.title = channel.title || "Weather TV channel";
+}
+
+function ensureWeatherTvLoaded() {
+    if (weatherTvLoaded || !weatherNewsFrame) {
+        return;
+    }
+
+    weatherTvLoaded = true;
+    applyWeatherTvChannel(weatherTvChannels[activeWeatherTvIndex]);
 }
 
 function updateRadarPlaybackButton() {
@@ -528,8 +585,17 @@ async function ensureWeatherMap() {
         return;
     }
 
-    renderWeatherMapEmbed();
-    scheduleRadarRefresh();
+    const loadMapPreview = () => {
+        if (weatherMapLoaded) {
+            return;
+        }
+
+        weatherMapLoaded = true;
+        renderWeatherMapEmbed();
+        scheduleRadarRefresh();
+    };
+
+    observeOnceWhenVisible(weatherMapElement, loadMapPreview);
 }
 
 async function syncWeatherMapToLocation(payload) {
@@ -562,6 +628,37 @@ function formatDayName(date = new Date()) {
     return date.toLocaleDateString("en-US", {
         weekday: "long"
     });
+}
+
+function getLocationHour(timeValue) {
+    const timeText = String(timeValue || "");
+    const match = timeText.match(/T(\d{2}):(\d{2})/);
+
+    if (match) {
+        return {
+            hour: Number(match[1]),
+            minute: Number(match[2])
+        };
+    }
+
+    const date = new Date(timeValue);
+
+    if (Number.isNaN(date.getTime())) {
+        return {
+            hour: 12,
+            minute: 0
+        };
+    }
+
+    return {
+        hour: date.getHours(),
+        minute: date.getMinutes()
+    };
+}
+
+function getDayPhaseLabel(timeValue) {
+    const { hour } = getLocationHour(timeValue);
+    return hour >= 6 && hour < 18 ? "Day now" : "Night now";
 }
 
 function setPredictionFallback() {
@@ -1248,10 +1345,13 @@ function getForecastIconMarkup(weatherCode) {
     if (type === "rain") {
         return `
             <div class="forecast-icon rain" aria-hidden="true">
-                <img src="images/cloud.png" alt="Rain cloud icon" class="forecast-icon-image">
-                <span class="forecast-drop drop-one"></span>
-                <span class="forecast-drop drop-two"></span>
-                <span class="forecast-drop drop-three"></span>
+                <img
+                    src="images/rain-showers.png?v=1"
+                    alt="Rain cloud icon"
+                    width="58"
+                    height="58"
+                    class="forecast-icon-image"
+                >
             </div>
         `;
     }
@@ -1294,6 +1394,18 @@ function formatForecastDay(isoDate) {
     return new Date(isoDate).toLocaleDateString("en-US", {
         weekday: "short"
     });
+}
+
+function getCompactForecastLabel(weatherCode) {
+    if ([95, 96, 99].includes(weatherCode)) return "Thunderstorm";
+    if ([80, 81, 82].includes(weatherCode)) return "Rain showers";
+    if ([61, 63, 65].includes(weatherCode)) return "Rain";
+    if ([51, 53, 55].includes(weatherCode)) return "Drizzle";
+    if ([71, 73, 75, 77].includes(weatherCode)) return "Snow";
+    if ([45, 48].includes(weatherCode)) return "Fog";
+    if ([2].includes(weatherCode)) return "Partly cloudy";
+    if ([3].includes(weatherCode)) return "Overcast";
+    return weatherDescriptions[weatherCode] || "Weather";
 }
 
 function renderHourlyForecast(hourly = []) {
@@ -1354,7 +1466,7 @@ function renderDailyForecast(daily = []) {
     forecastContainer.innerHTML = daily
         .map((entry, index) => {
             const cardClass = index === 0 ? "forecast-day active" : "forecast-day";
-            const weatherLabel = weatherDescriptions[entry.weatherCode] || "Weather";
+            const weatherLabel = getCompactForecastLabel(entry.weatherCode);
 
             return `
                 <article class="${cardClass}">
@@ -1376,6 +1488,24 @@ function updateLiveWeatherUI(payload) {
     latestLiveWeather = payload;
 
     document.getElementById("liveLocation").textContent = payload.location;
+    if (liveDayState) {
+        const phase = getDayPhaseLabel(payload.current.time);
+        const phaseText = liveDayState.querySelector(".live-phase-text");
+        const phaseIcon = liveDayState.querySelector(".live-phase-icon");
+        const isNight = phase === "Night now";
+
+        if (phaseText) {
+            phaseText.textContent = phase;
+        } else {
+            liveDayState.textContent = phase;
+        }
+
+        if (phaseIcon) {
+            phaseIcon.textContent = isNight ? "☾" : "☀";
+        }
+
+        liveDayState.classList.toggle("night", isNight);
+    }
     document.getElementById("liveTemp").textContent = formatMetric(payload.current.temperature, " C");
     document.getElementById("liveFeelsLike").textContent = formatMetric(payload.current.apparentTemperature, " C");
     document.getElementById("liveHumidity").textContent = formatMetric(payload.current.humidity, "%");
@@ -1439,22 +1569,11 @@ function useLiveWeatherInForm() {
 }
 
 function controlRain() {
-    if (!rainLayer) {
-        return;
-    }
-
-    const intensity = Math.random();
-
-    if (intensity < 0.3) {
-        rainLayer.style.opacity = "0.08";
-    } else if (intensity < 0.6) {
-        rainLayer.style.opacity = "0.16";
-    } else {
-        rainLayer.style.opacity = "0.28";
-    }
+    return;
 }
 
 function triggerLightning() {
+    return;
     const flash = document.createElement("div");
     flash.className = "flash";
     flash.style.opacity = "0.8";
@@ -1470,11 +1589,7 @@ function triggerLightning() {
 }
 
 function autoLightning() {
-    setInterval(() => {
-        if (Math.random() > 0.74) {
-            triggerLightning();
-        }
-    }, 5000);
+    return;
 }
 
 if (recordForm) {
@@ -1501,6 +1616,12 @@ if (refreshLiveWeatherBtn) {
 
 if (useLiveWeatherBtn) {
     useLiveWeatherBtn.addEventListener("click", useLiveWeatherInForm);
+}
+
+if (showRecordsBtn) {
+    showRecordsBtn.addEventListener("click", () => {
+        window.location.href = "records.html";
+    });
 }
 
 if (radarToggleBtn) {
@@ -1592,12 +1713,15 @@ dashboardChips.forEach((chip) => {
 });
 
 if (weatherChannelSwitchBtn) {
-    applyWeatherTvChannel(weatherTvChannels[activeWeatherTvIndex]);
-
     weatherChannelSwitchBtn.addEventListener("click", () => {
+        ensureWeatherTvLoaded();
         activeWeatherTvIndex = (activeWeatherTvIndex + 1) % weatherTvChannels.length;
         applyWeatherTvChannel(weatherTvChannels[activeWeatherTvIndex]);
     });
+}
+
+if (weatherNewsFrame) {
+    ensureWeatherTvLoaded();
 }
 
 if (fullscreenMapBtn && weatherMapShell) {
@@ -1654,11 +1778,22 @@ if (authLogoutBtn) {
     authLogoutBtn.addEventListener("click", logoutSession);
 }
 
-document.addEventListener("mousemove", (event) => {
-    const x = event.clientX / window.innerWidth;
-    const y = event.clientY / window.innerHeight;
-    document.body.style.backgroundPosition = `${50 + x * 4}% ${50 + y * 4}%`;
-});
+if (!reducedEffects) {
+    let backgroundMotionFrame = null;
+
+    document.addEventListener("mousemove", (event) => {
+        if (backgroundMotionFrame) {
+            return;
+        }
+
+        backgroundMotionFrame = window.requestAnimationFrame(() => {
+            const x = event.clientX / window.innerWidth;
+            const y = event.clientY / window.innerHeight;
+            document.body.style.backgroundPosition = `${50 + x * 4}% ${50 + y * 4}%`;
+            backgroundMotionFrame = null;
+        });
+    });
+}
 
 async function initializeDashboard() {
     const isAuthenticated = await ensureAuthenticatedPage();
@@ -1670,9 +1805,6 @@ async function initializeDashboard() {
     dateInput.value = formatDateForInput();
     locationField.value = locationInput.value.trim();
     dayField.value = formatDayName();
-    setInterval(controlRain, 3000);
-    controlRain();
-    autoLightning();
     ensureWeatherMap();
     updateFullscreenButton();
     setPredictionFallback();

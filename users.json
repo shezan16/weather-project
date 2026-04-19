@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "id": "bb22c6d6-bc49-4d71-8a21-69ea53fb20f9",
+    "name": "Ridwan Ahamed Shezan",
+    "email": "ridwanahamedshezan16220@gmail.com",
+    "passwordHash": "$2b$10$8d/VnIYHIqZh4P6lNY03legUtbLHSE0D7mcXIOhBdnZoXz33AVmNS",
+    "createdAt": "2026-04-18T18:50:15.053Z"
+  },
+  {
+    "id": "15dc55ef-8fc8-4a60-9d8f-ef0886e32cb0",
+    "name": "Ridwan Shezan",
+    "email": "ridwanshezan4545@gmail.com",
+    "passwordHash": "$2b$10$3tEuBCM7.DtSFfIe7vyaEeJF8OsoXBYZZSGYXnv9ZZNPamSV44gQa",
+    "createdAt": "2026-04-18T18:54:53.414Z"
+  }
+]
